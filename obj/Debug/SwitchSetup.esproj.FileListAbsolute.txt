@@ -1,2 +1,0 @@
-D:\Projects\SwitchSetup\obj\Debug\SwitchSetup.esproj.SuggestedBindingRedirects.cache
-D:\Projects\SwitchSetup\obj\Debug\SwitchSetup.esproj.CoreCompileInputs.cache
