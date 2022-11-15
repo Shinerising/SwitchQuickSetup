@@ -1,6 +1,31 @@
 import prompts from 'prompts';
 import stringWidth from 'string-width';
 import chalk from 'chalk';
+import { Telnet } from 'telnet-client';
+import { exit } from 'process';
+
+async function telnetCommand(command:string) {
+
+  const connection = new Telnet()
+
+  const params = {
+    port: 23,
+    host: 'telehack.com',
+    shellPrompt: '\\.',
+    ors: '\r\n',
+    timeout: 3000,
+    execTimeout: 3000
+  }
+
+  try {
+    await connection.connect(params)
+  } catch (error) {
+    // handle the throw (timeout)
+  }
+
+  const res = await connection.exec(command)
+  console.log(res);
+}
 
 function generateHeader(header: string): string {
   const length = stringWidth(header);
@@ -44,6 +69,21 @@ async function start() {
     ],
     hint: '请使用方向键进行选择，回车键确认。',
     initial: 0
+  }, {
+    type: 'text',
+    name: 'target',
+    message: '请输入通信地址：',
+    validate: value => value.length === 0 ? '必须输入通信地址' : true
+  }, {
+    type: 'text',
+    name: 'user',
+    message: '请输入用户名：',
+    initial: 'admin',
+    validate: value => value.length === 0 ? '必须输入用户名' : true
+  }, {
+    type: 'password',
+    name: 'password',
+    message: '请输入登录密码：'
   }]);
 
   await printPage('消息提示', '对不起，现在不支持任何交换机!', {
@@ -53,6 +93,9 @@ async function start() {
     initial: true
   });
 
+  await telnetCommand('cal');
+  
+  exit(0);
 }
 
 start();
