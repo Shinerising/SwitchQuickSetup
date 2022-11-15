@@ -4,9 +4,9 @@ import chalk from 'chalk';
 
 function generateHeader(header: string): string {
   const length = stringWidth(header);
-  let width = length > 36 ? length + 4 : 40;
-  let padLeft = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length - 1) / 2;
-  let padRight = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length + 1) / 2;
+  const width = length > 36 ? length + 4 : 40;
+  const padLeft = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length - 1) / 2;
+  const padRight = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length + 1) / 2;
   return `${'='.repeat(40)}\n*${' '.repeat(padLeft)}${header}${' '.repeat(padRight)}*\n${'='.repeat(40)}`;
 }
 
@@ -21,7 +21,7 @@ async function printPage<T extends string = string>(header: string, message: str
   return result;
 }
 async function start() {
-  let result = await printPage('欢迎使用交换机快速配置工具', '', [{
+  await printPage('欢迎使用交换机快速配置工具', '', [{
     type: 'select',
     name: 'type',
     message: '请选择交换机型号：',
