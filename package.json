@@ -37,6 +37,8 @@
     "serialport": "^10.4.0",
     "string-width": "^5.1.2",
     "telnet-client": "^2.0.6",
-    "ts-node": "^10.9.1"
+    "tftp": "^0.1.2",
+    "ts-node": "^10.9.1",
+    "win-select-folder": "^1.0.1"
   }
 }

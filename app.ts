@@ -1,15 +1,33 @@
 import prompts from 'prompts';
 import stringWidth from 'string-width';
-import chalk from 'chalk';
+import chalk, { ChalkInstance } from 'chalk';
 import { Telnet } from 'telnet-client';
 import { exit } from 'process';
 import { SerialPort } from 'serialport';
+import { createServer } from 'tftp'
+import selectFolder from 'win-select-folder'
 
-async function getSerialPortList():Promise<string[]>{
+async function createTftpServer() {
+  if (process.platform === 'win32') {
+    const root = 'myComputer'; // rootfolder - default desktop
+    const description = 'some description'; // default Select Folder
+    const newFolderButton = 0; // whether or not to show the newFolderButton - default 1
+
+    const result = await selectFolder({ root, description, newFolderButton });
+  }
+  const server = createServer({
+    host: "0.0.0.0",
+    port: 69,
+    root: "/",
+    denyPUT: true
+  });
+}
+
+async function getSerialPortList(): Promise<string[]> {
   return (await SerialPort.list()).map(item => item.path);
 }
 
-async function telnetCommand(command:string) {
+async function telnetCommand(command: string) {
 
   const connection = new Telnet()
 
@@ -40,14 +58,14 @@ function generateHeader(header: string): string {
   return `${'='.repeat(40)}\n*${' '.repeat(padLeft)}${header}${' '.repeat(padRight)}*\n${'='.repeat(40)}`;
 }
 
-async function printPage<T extends string = string>(header: string, message?: string, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
+async function printPage<T extends string = string>(header: string, message?: string | ChalkInstance, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
   const log = console.log;
   console.clear();
-  log(chalk.blue(generateHeader(header)));
-  if (message && message.length > 0) {
+  log(chalk.green(generateHeader(header)));
+  if (message) {
     log(message);
   }
-  if(questions){
+  if (questions) {
     const result = await prompts(questions, options);
     return result;
   }
@@ -99,12 +117,31 @@ async function start() {
     name: 'type',
     message: '请选择需要执行的功能：',
     choices: [
-      { title: '修改登录用户名称', value: '1' },
+      { title: '修改交换机名称', value: '1' },
       { title: '划分VLAN和网口', value: '2' },
       { title: '设置Telnet功能', value: '3' },
       { title: '设置SNMPV2功能', value: '4' },
       { title: '设置SNMPV3功能', value: '5' },
-      { title: '返回初始设置界面', value: '6' }
+      { title: '使用其他相关设置功能', value: '6' },
+      { title: '查看、备份或恢复交换机配置', value: '7' },
+      { title: '使用交换机状态监视工具', value: '8' },
+      { title: '使用关键性设置功能', value: '9' },
+      { title: '返回初始设置界面', value: '0' }
+    ],
+    hint: '请使用方向键进行选择，回车键确认。',
+    initial: 0
+  });
+
+  await printPage('欢迎使用交换机快速配置工具', chalk.red('注意！以下操作可能对交换机工作产生严重影响，请谨慎操作！'), {
+    type: 'select',
+    name: 'type',
+    message: '请选择需要执行的功能：',
+    choices: [
+      { title: '重启交换机', value: '1' },
+      { title: '修改用户登录密码', value: '2' },
+      { title: '重置所有用户自定义设置', value: '3' },
+      { title: '恢复到出厂设置', value: '4' },
+      { title: '返回上一设置界面', value: '0' }
     ],
     hint: '请使用方向键进行选择，回车键确认。',
     initial: 0
@@ -117,8 +154,10 @@ async function start() {
     initial: true
   });
 
+  await createTftpServer();
+
   //await telnetCommand('cal');
-  
+
   exit(0);
 }
 
