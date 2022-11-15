@@ -35,15 +35,18 @@ function generateHeader(header: string): string {
   return `${'='.repeat(40)}\n*${' '.repeat(padLeft)}${header}${' '.repeat(padRight)}*\n${'='.repeat(40)}`;
 }
 
-async function printPage<T extends string = string>(header: string, message: string, questions: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
+async function printPage<T extends string = string>(header: string, message?: string, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
   const log = console.log;
   console.clear();
   log(chalk.blue(generateHeader(header)));
   if (message && message.length > 0) {
     log(message);
   }
-  const result = await prompts(questions, options);
-  return result;
+  if(questions){
+    const result = await prompts(questions, options);
+    return result;
+  }
+  return null;
 }
 async function start() {
   await printPage('欢迎使用交换机快速配置工具', '', [{
@@ -86,6 +89,22 @@ async function start() {
     message: '请输入登录密码：'
   }]);
 
+  await printPage('欢迎使用交换机快速配置工具', '', {
+    type: 'select',
+    name: 'type',
+    message: '请选择需要执行的功能：',
+    choices: [
+      { title: '修改登录用户名称', value: '1' },
+      { title: '划分VLAN和网口', value: '2' },
+      { title: '设置Telnet功能', value: '3' },
+      { title: '设置SNMPV2功能', value: '4' },
+      { title: '设置SNMPV3功能', value: '5' },
+      { title: '返回初始设置界面', value: '6' }
+    ],
+    hint: '请使用方向键进行选择，回车键确认。',
+    initial: 0
+  });
+
   await printPage('消息提示', '对不起，现在不支持任何交换机!', {
     type: 'confirm',
     name: 'value',
@@ -93,7 +112,7 @@ async function start() {
     initial: true
   });
 
-  await telnetCommand('cal');
+  //await telnetCommand('cal');
   
   exit(0);
 }
