@@ -12,6 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "devDependencies": {
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
@@ -31,7 +32,9 @@
   },
   "dependencies": {
     "@types/prompts": "^2.4.1",
+    "chalk": "^5.1.2",
     "prompts": "^2.4.2",
+    "string-width": "^5.1.2",
     "ts-node": "^10.9.1"
   }
 }
