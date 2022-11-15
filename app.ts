@@ -3,6 +3,11 @@ import stringWidth from 'string-width';
 import chalk from 'chalk';
 import { Telnet } from 'telnet-client';
 import { exit } from 'process';
+import { SerialPort } from 'serialport';
+
+async function getSerialPortList():Promise<string[]>{
+  return (await SerialPort.list()).map(item => item.path);
+}
 
 async function telnetCommand(command:string) {
 
