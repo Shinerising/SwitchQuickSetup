@@ -20,7 +20,15 @@ export class SerialCommander {
     private serialDataHandler: (data:string) => void;
     private writeDelimiter: string;
     private parser: ReadlineParser;
-    constructor(option: SerialCommanderOption) {
+    constructor(option: SerialCommanderOption = {
+        port: '/dev/modem',
+        baudrate: 115200,
+        readDelimiter: '\n',
+        writeDelimiter: '\r\n',
+        disableLog: false,
+        defaultDelay: 100,
+        log: string => console.log(`[${new Date().toISOString()}] ${string}`)
+      }) {
         this.log = option.log;
         this.isLogEnabled = !option.disableLog
         this.defaultDelay = option.defaultDelay
