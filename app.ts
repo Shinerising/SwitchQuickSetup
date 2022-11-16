@@ -6,25 +6,71 @@ import { exit } from 'process';
 import { SerialPort } from 'serialport';
 import { createServer } from 'tftp'
 import selectFolder from 'win-select-folder'
+import { networkInterfaces } from 'os';
 
 async function createTftpServer() {
+  let path = '';
   if (process.platform === 'win32') {
     const root = 'myComputer'; // rootfolder - default desktop
-    const description = 'some description'; // default Select Folder
-    const newFolderButton = 0; // whether or not to show the newFolderButton - default 1
+    const description = '请选择文件保存位置'; // default Select Folder
+    const newFolderButton = 1; // whether or not to show the newFolderButton - default 1
 
-    const result = await selectFolder({ root, description, newFolderButton });
+    path = await selectFolder({ root, description, newFolderButton }) as string;
   }
+  console.log(path);
   const server = createServer({
     host: "0.0.0.0",
-    port: 69,
-    root: "/",
-    denyPUT: true
+    port: 8069,
+    root: path,
+    denyPUT: false
+  });
+  console.log(server);
+
+  await waitFilePut(server);
+}
+
+async function waitFilePut(server:any){
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, 2000000);
+    server.listen();
+    server.on ("error", function (error:any){
+      //Errors from the main socket
+      //The current transfers are not aborted
+      console.error (error);
+      reject(error);
+    });
+     
+    server.on ("request", function (req:any, res:any){
+      console.log(req);
+      req.on ("error", function (error:any){
+        //Error from the request
+        //The connection is already closed
+        console.error ("[" + req.stats.remoteAddress + ":" + req.stats.remotePort +
+            "] (" + req.file + ") " + error.message);
+      });
+    });
   });
 }
 
 async function getSerialPortList(): Promise<string[]> {
   return (await SerialPort.list()).map(item => item.path);
+}
+
+function getInterfaceList() {
+  const nets = networkInterfaces();
+  const results = []; // Or just '{}', an empty object
+
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name] || []) {
+      const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4
+      if (net.family === familyV4Value && !net.internal) {
+          results.push(net.address);
+      }
+    }
+  }
+  return results;
 }
 
 async function telnetCommand(command: string) {
@@ -58,10 +104,12 @@ function generateHeader(header: string): string {
   return `${'='.repeat(40)}\n*${' '.repeat(padLeft)}${header}${' '.repeat(padRight)}*\n${'='.repeat(40)}`;
 }
 
-async function printPage<T extends string = string>(header: string, message?: string | ChalkInstance, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
+async function printPage<T extends string = string>(header?: string, message?: string | ChalkInstance, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
   const log = console.log;
-  console.clear();
-  log(chalk.green(generateHeader(header)));
+  if (header) {
+    console.clear();
+    log(chalk.green(generateHeader(header)));
+  }
   if (message) {
     log(message);
   }
@@ -72,6 +120,9 @@ async function printPage<T extends string = string>(header: string, message?: st
   return null;
 }
 async function start() {
+  await printPage('欢迎使用交换机快速配置工具', '正在检查系统配置');
+  const serialList = await getSerialPortList();
+
   await printPage('欢迎使用交换机快速配置工具', '', [{
     type: 'select',
     name: 'type',
@@ -96,9 +147,10 @@ async function start() {
     hint: '请使用方向键进行选择，回车键确认。',
     initial: 0
   }, {
-    type: 'text',
+    type: method => method === 'serial' ? 'autocomplete' : 'text',
     name: 'target',
     message: '请输入通信地址：',
+    choices: () => serialList.map(item => ({ title: item, value: item })),
     validate: value => value.length === 0 ? '必须输入通信地址' : true
   }, {
     type: 'text',
@@ -154,11 +206,14 @@ async function start() {
     initial: true
   });
 
-  await createTftpServer();
+  //await createTftpServer();
 
   //await telnetCommand('cal');
 
   exit(0);
+}
+async function test() {
+  await createTftpServer();
 }
 
 start();
