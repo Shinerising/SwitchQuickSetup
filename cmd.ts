@@ -1,4 +1,4 @@
-import SerialCommander from '@westh/serial-commander'
+import { SerialCommander } from './src/serialcommander'
 import prompts from 'prompts';
 
 const serialCommander = new SerialCommander({
@@ -8,11 +8,12 @@ const serialCommander = new SerialCommander({
   writeDelimiter: '\r', // defaults to '/r/n'
   disableLog: false, // defaults to false
   defaultDelay: 1000, // delay [ms] before the command is issued defaults to 100
-  log: string => console.log(`[${new Date().toISOString()}] ${string}`) // default logging function
+  log: (text:string | string[]) => console.log(`[${new Date().toISOString()}] ${text}`) // default logging function
 })
 
 async function main () {
-    while(true){
+    const flag = true;
+    while(flag){
         const result = await prompts({
             type: 'text',
             name: 'command',
@@ -23,7 +24,7 @@ async function main () {
           const command = result.command;
 
         const options = {
-          expectedResponses: [''], // defaults to ['OK']
+          expectedResponses: ['Username:', 'Password:', '>'], // defaults to ['OK']
           timeout: 50000,  // defaults to 1000
           delay: 100 // defaults to defaultDelay set in the constructor
         }

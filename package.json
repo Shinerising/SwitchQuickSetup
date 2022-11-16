@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --build && pkg -t node14-win --out-path bin .\\dist\\app.js",
     "clean": "tsc --build --clean",
-    "start": "ts-node app.ts"
+    "start": "ts-node app.ts",
+    "cmd": "ts-node cmd.ts"
   },
   "keywords": [],
   "author": "",
