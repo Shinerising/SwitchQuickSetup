@@ -1,3 +1,4 @@
+import nodeExternals from 'webpack-node-externals';
 export default {
   entry: "./index.ts",
   module: {
@@ -12,14 +13,19 @@ export default {
       }]
   },
   target: 'node',
+  externals: [
+    nodeExternals({
+      allowlist: ["chalk", "string-width"]
+    })
+  ],
   node: {
     __dirname: false,
   },
+  output: {
+    filename: 'main.cjs'
+  },
   resolve: {
     extensions: [".ts", ".js"]
-  },
-  externals: {
-    'serialport': 'serialport',
   },
   mode: 'production'
 };
