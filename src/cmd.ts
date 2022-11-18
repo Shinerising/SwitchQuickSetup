@@ -1,4 +1,4 @@
-import { SerialCommander } from './src/serialcommander'
+import { SerialCommander } from './serialcommander'
 import prompts from 'prompts';
 
 const serialCommander = new SerialCommander({

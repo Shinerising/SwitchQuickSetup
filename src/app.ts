@@ -216,4 +216,8 @@ async function test() {
   await createTftpServer();
 }
 
-start();
+export class App{
+  public start(){
+    start();
+  }
+}
