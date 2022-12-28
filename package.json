@@ -18,17 +18,17 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
-    "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^8.27.0",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
+    "eslint": "^8.30.0",
     "node-loader": "^2.0.0",
     "pkg": "^5.8.0",
     "rcedit": "^3.0.1",
-    "ts-loader": "^9.4.1",
-    "typescript": "^4.8.4",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.4",
     "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.0",
+    "webpack-cli": "^5.0.1",
     "webpack-node-externals": "^3.0.0"
   },
   "eslintConfig": {
@@ -55,10 +55,10 @@
     "outputPath": "bin"
   },
   "dependencies": {
-    "@types/prompts": "^2.4.1",
-    "chalk": "^5.1.2",
+    "@types/prompts": "^2.4.2",
+    "chalk": "^5.2.0",
     "prompts": "^2.4.2",
-    "serialport": "^10.4.0",
+    "serialport": "^10.5.0",
     "string-width": "^5.1.2",
     "telnet-client": "^2.0.6",
     "tftp": "^0.1.2",
