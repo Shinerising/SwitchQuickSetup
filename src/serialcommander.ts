@@ -2,95 +2,95 @@ import { SerialPort } from 'serialport'
 import { ReadlineParser } from '@serialport/parser-readline'
 
 declare interface SerialCommanderOption {
-    port: string;
-    baudrate: number;
-    readDelimiter: string;
-    writeDelimiter: string;
-    disableLog: boolean;
-    defaultDelay: number;
-    log: (text:string | string[]) => void;
+  port: string;
+  baudrate: number;
+  readDelimiter: string;
+  writeDelimiter: string;
+  disableLog: boolean;
+  defaultDelay: number;
+  log: (text: string | string[]) => void;
 }
 
 export class SerialCommander {
-    private port: SerialPort;
-    private log: (text:string | string[]) => void;
-    private isLogEnabled: boolean;
-    private defaultDelay: number;
-    private fallbackSerialDataHandler: (data:string) => void;
-    private serialDataHandler: (data:string) => void;
-    private writeDelimiter: string;
-    private parser: ReadlineParser;
-    constructor(option: SerialCommanderOption = {
-        port: '/dev/modem',
-        baudrate: 115200,
-        readDelimiter: '\n',
-        writeDelimiter: '\r\n',
-        disableLog: false,
-        defaultDelay: 100,
-        log: string => console.log(`[${new Date().toISOString()}] ${string}`)
-      }) {
-        this.log = option.log;
-        this.isLogEnabled = !option.disableLog
-        this.defaultDelay = option.defaultDelay
-        this.fallbackSerialDataHandler = (line: string) => this.log(`{answer given outside command scope} ${line}`)
+  private port: SerialPort;
+  private log: (text: string | string[]) => void;
+  private isLogEnabled: boolean;
+  private defaultDelay: number;
+  private fallbackSerialDataHandler: (data: string) => void;
+  private serialDataHandler: (data: string) => void;
+  private writeDelimiter: string;
+  private parser: ReadlineParser;
+  constructor(option: SerialCommanderOption = {
+    port: '/dev/modem',
+    baudrate: 115200,
+    readDelimiter: '\n',
+    writeDelimiter: '\r\n',
+    disableLog: false,
+    defaultDelay: 100,
+    log: string => console.log(`[${new Date().toISOString()}] ${string}`)
+  }) {
+    this.log = option.log;
+    this.isLogEnabled = !option.disableLog
+    this.defaultDelay = option.defaultDelay
+    this.fallbackSerialDataHandler = (line: string) => this.log(`{answer given outside command scope} ${line}`)
+    this.serialDataHandler = this.fallbackSerialDataHandler
+    this.writeDelimiter = option.writeDelimiter
+
+    this.port = new SerialPort({ path: option.port, baudRate: option.baudrate })
+    this.parser = new ReadlineParser({ delimiter: option.readDelimiter })
+    this.port.pipe(this.parser)
+    this.parser.on('data', (line: string) => this.serialDataHandler(line))
+  }
+
+  async send(command: string, {
+    expectedResponses = ['OK'],
+    timeout = 1000,
+    delay = this.defaultDelay
+  } = {}) {
+    await new Promise(resolve => setTimeout(resolve, delay))
+
+    const startTime = new Date().getTime()
+    let response = ''
+
+    return new Promise((resolve, reject) => {
+      const errorTimeout = setTimeout(() => {
         this.serialDataHandler = this.fallbackSerialDataHandler
-        this.writeDelimiter = option.writeDelimiter
+        reject(new Error('Request timed out before a satisfactory answer was given'))
+      }, timeout)
 
-        this.port = new SerialPort({ path: option.port, baudRate: option.baudrate })
-        this.parser = new ReadlineParser({ delimiter: option.readDelimiter })
-        this.port.pipe(this.parser)
-        this.parser.on('data', (line: string) => this.serialDataHandler(line))
-    }
+      const escapedCommand = `${command}${this.writeDelimiter}`
+      this.port.write(escapedCommand)
+      if (this.isLogEnabled) this.log(`>> ${command}`)
 
-    async send(command: string, {
-        expectedResponses = ['OK'],
-        timeout = 1000,
-        delay = this.defaultDelay
-    } = {}) {
-        await new Promise(resolve => setTimeout(resolve, delay))
+      this.serialDataHandler = (line: string | string[]) => {
+        response += line
 
-        const startTime = new Date().getTime()
-        let response = ''
+        const isCommandSuccessfullyTerminated = expectedResponses.some(
+          expectedResponse => line.includes(expectedResponse)
+        )
+        if (isCommandSuccessfullyTerminated) {
+          if (this.isLogEnabled) this.log(`<< ${line}`)
 
-        return new Promise((resolve, reject) => {
-            const errorTimeout = setTimeout(() => {
-                this.serialDataHandler = this.fallbackSerialDataHandler
-                reject(new Error('Request timed out before a satisfactory answer was given'))
-            }, timeout)
+          this.serialDataHandler = this.fallbackSerialDataHandler
+          clearTimeout(errorTimeout)
 
-            const escapedCommand = `${command}${this.writeDelimiter}`
-            this.port.write(escapedCommand)
-            if (this.isLogEnabled) this.log(`>> ${command}`)
+          const endTime = new Date().getTime()
 
-            this.serialDataHandler = (line: string | string[]) => {
-                response += line
+          resolve({
+            command,
+            startTime,
+            endTime,
+            executionTime: endTime - startTime,
+            response
+          })
+        } else {
+          if (this.isLogEnabled) this.log(line)
+        }
+      }
+    })
+  }
 
-                const isCommandSuccessfullyTerminated = expectedResponses.some(
-                    expectedResponse => line.includes(expectedResponse)
-                )
-                if (isCommandSuccessfullyTerminated) {
-                    if (this.isLogEnabled) this.log(`<< ${line}`)
-
-                    this.serialDataHandler = this.fallbackSerialDataHandler
-                    clearTimeout(errorTimeout)
-
-                    const endTime = new Date().getTime()
-
-                    resolve({
-                        command,
-                        startTime,
-                        endTime,
-                        executionTime: endTime - startTime,
-                        response
-                    })
-                } else {
-                    if (this.isLogEnabled) this.log(line)
-                }
-            }
-        })
-    }
-
-    close() {
-        if (this.port.isOpen) this.port.close();
-    }
+  close() {
+    if (this.port.isOpen) this.port.close();
+  }
 }

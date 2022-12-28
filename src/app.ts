@@ -11,11 +11,11 @@ import { networkInterfaces } from 'os';
 async function createTftpServer() {
   let path = '';
   if (process.platform === 'win32') {
-    const root = 'myComputer'; // rootfolder - default desktop
-    const description = '请选择文件保存位置'; // default Select Folder
-    const newFolderButton = 1; // whether or not to show the newFolderButton - default 1
+    const root = 'myComputer';
+    const description = '请选择文件保存位置';
+    const newFolderButton = 1;
 
-    path = await selectFolder({ root, description, newFolderButton }) as string;
+    path = await selectFolder({ root, description, newFolderButton });
   }
   console.log(path);
   const server = createServer({
@@ -29,22 +29,20 @@ async function createTftpServer() {
   await waitFilePut(server);
 }
 
-async function waitFilePut(server: any) {
+async function waitFilePut(server: Server) {
   return new Promise<void>((resolve, reject) => {
     setTimeout(() => {
       resolve();
     }, 2000000);
     server.listen();
-    server.on("error", function (error: any) {
-      //Errors from the main socket
-      //The current transfers are not aborted
+    server.on("error", (error: TftpError) => {
       console.error(error);
       reject(error);
     });
 
-    server.on("request", function (req: any, res: any) {
+    server.on("request", (req: GetStream, res: PutStream) => {
       console.log(req);
-      req.on("error", function (error: any) {
+      req.on("error", function (error: Error) {
         //Error from the request
         //The connection is already closed
         console.error("[" + req.stats.remoteAddress + ":" + req.stats.remotePort +
