@@ -1,4 +1,5 @@
 import { Command } from "./command-collection";
+import { clientWrapper } from "./client-manager";
 import prompts from "prompts";
 
 export const executeCommand = async <T extends string>(command: Command<T>): Promise<void> => {
@@ -18,8 +19,12 @@ export const executeCommand = async <T extends string>(command: Command<T>): Pro
       }
     }
 
-    const text = command.apply(result);
-    console.log(text);
+    const commands = command.apply(result);
+    await clientWrapper.executeCommandList(commands.split("\n"), (text: string) => {
+      console.log(text);
+    }, (text: string) => {
+      console.log(text);
+    });
 
     if (command.afterExecute) {
       try {

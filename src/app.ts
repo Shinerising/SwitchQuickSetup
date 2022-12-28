@@ -1,36 +1,15 @@
 import prompts from "prompts";
 import stringWidth from "string-width";
 import chalk, { ChalkInstance } from "chalk";
-import { Telnet } from "telnet-client";
 import { exit } from "process";
 import { getSerialPortList, getInterfaceList } from "./util";
 
-async function telnetCommand(command: string) {
 
-  const connection = new Telnet()
-
-  const params = {
-    port: 23,
-    host: "telehack.com",
-    shellPrompt: "\\.",
-    ors: "\r\n",
-    timeout: 3000,
-    execTimeout: 3000
-  }
-
-  try {
-    await connection.connect(params)
-  } catch (error) {
-    // handle the throw (timeout)
-  }
-
-  const res = await connection.exec(command)
-  console.log(res);
-}
-
+/*
 function submitCommand(){
   const commandList = ``;
 }
+*/
 
 export class SwitchLoginConfig {
   static defaultUser = "admin";
