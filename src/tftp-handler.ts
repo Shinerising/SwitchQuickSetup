@@ -1,19 +1,9 @@
-import { createServer } from 'tftp'
-//import selectFolder from 'win-select-folder'
+import { createServer } from "tftp"
 
 let server: Server;
 
 const startServer = async (location: string) => {
   const path = location;
-  /*
-  if (process.platform === 'win32') {
-    const root = 'myComputer';
-    const description = '请选择文件保存位置';
-    const newFolderButton = 1;
-
-    path = await selectFolder({ root, description, newFolderButton });
-  }
-  */
   server = createServer({
     host: "0.0.0.0",
     port: 8069,

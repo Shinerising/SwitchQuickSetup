@@ -9,6 +9,7 @@
     "build-win": "webpack && pkg -t node18-win-x64 --compress Brotli --out-path bin . && node manifest.js",
     "build-mac": "webpack && pkg -t node18-macos-arm64 --compress Brotli --out-path bin .",
     "clean": "tsc --build --clean",
+    "lint": "eslint src/*.ts --fix",
     "start": "ts-node index.ts",
     "cmd": "ts-node cmd.ts"
   },

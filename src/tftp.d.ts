@@ -61,7 +61,7 @@ declare type Server = {
   on(event: "listening", callback: () => void): void,
   on(event: "request", callback: (req: GetStream, put: PutStream) => void): void
 }
-declare module 'tftp' {
+declare module "tftp" {
   export function createServer(options: ServerOption, requestListener?: (req, res) => void): Server;
   export function createClient(options: ClientOption): Client;
 } 

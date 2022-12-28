@@ -1,5 +1,5 @@
-import { SerialPort } from 'serialport'
-import { ReadlineParser } from '@serialport/parser-readline'
+import { SerialPort } from "serialport"
+import { ReadlineParser } from "@serialport/parser-readline"
 
 declare interface SerialCommanderOption {
   port: string;
@@ -21,10 +21,10 @@ export class SerialCommander {
   private writeDelimiter: string;
   private parser: ReadlineParser;
   constructor(option: SerialCommanderOption = {
-    port: '/dev/modem',
+    port: "/dev/modem",
     baudrate: 115200,
-    readDelimiter: '\n',
-    writeDelimiter: '\r\n',
+    readDelimiter: "\n",
+    writeDelimiter: "\r\n",
     disableLog: false,
     defaultDelay: 100,
     log: string => console.log(`[${new Date().toISOString()}] ${string}`)
@@ -39,23 +39,23 @@ export class SerialCommander {
     this.port = new SerialPort({ path: option.port, baudRate: option.baudrate })
     this.parser = new ReadlineParser({ delimiter: option.readDelimiter })
     this.port.pipe(this.parser)
-    this.parser.on('data', (line: string) => this.serialDataHandler(line))
+    this.parser.on("data", (line: string) => this.serialDataHandler(line))
   }
 
   async send(command: string, {
-    expectedResponses = ['OK'],
+    expectedResponses = ["OK"],
     timeout = 1000,
     delay = this.defaultDelay
   } = {}) {
     await new Promise(resolve => setTimeout(resolve, delay))
 
     const startTime = new Date().getTime()
-    let response = ''
+    let response = ""
 
     return new Promise((resolve, reject) => {
       const errorTimeout = setTimeout(() => {
         this.serialDataHandler = this.fallbackSerialDataHandler
-        reject(new Error('Request timed out before a satisfactory answer was given'))
+        reject(new Error("Request timed out before a satisfactory answer was given"))
       }, timeout)
 
       const escapedCommand = `${command}${this.writeDelimiter}`
