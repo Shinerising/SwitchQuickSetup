@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-node src/test.ts",
     "build": "webpack",
     "build-win": "webpack && pkg -t node18-win-x64 --compress Brotli --out-path bin . && node manifest.js",
     "build-mac": "webpack && pkg -t node18-macos-arm64 --compress Brotli --out-path bin .",
@@ -56,9 +56,11 @@
   },
   "dependencies": {
     "@types/prompts": "^2.4.2",
+    "@types/string-format": "^2.0.0",
     "chalk": "^5.2.0",
     "prompts": "^2.4.2",
     "serialport": "^10.5.0",
+    "string-format": "^2.0.0",
     "string-width": "^5.1.2",
     "telnet-client": "^2.0.6",
     "tftp": "^0.1.2",

@@ -12,7 +12,7 @@ async function getSerialPortList(): Promise<string[]> {
 
 function getInterfaceList() {
   const nets = networkInterfaces();
-  const results = []; // Or just '{}', an empty object
+  const results = [];
 
   for (const name of Object.keys(nets)) {
     for (const net of nets[name] || []) {
