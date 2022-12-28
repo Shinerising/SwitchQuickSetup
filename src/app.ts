@@ -4,53 +4,7 @@ import chalk, { ChalkInstance } from 'chalk';
 import { Telnet } from 'telnet-client';
 import { exit } from 'process';
 import { SerialPort } from 'serialport';
-import { createServer } from 'tftp'
-import selectFolder from 'win-select-folder'
 import { networkInterfaces } from 'os';
-
-async function createTftpServer() {
-  let path = '';
-  if (process.platform === 'win32') {
-    const root = 'myComputer';
-    const description = '请选择文件保存位置';
-    const newFolderButton = 1;
-
-    path = await selectFolder({ root, description, newFolderButton });
-  }
-  console.log(path);
-  const server = createServer({
-    host: "0.0.0.0",
-    port: 8069,
-    root: path,
-    denyPUT: false
-  });
-  console.log(server);
-
-  await waitFilePut(server);
-}
-
-async function waitFilePut(server: Server) {
-  return new Promise<void>((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, 2000000);
-    server.listen();
-    server.on("error", (error: TftpError) => {
-      console.error(error);
-      reject(error);
-    });
-
-    server.on("request", (req: GetStream, res: PutStream) => {
-      console.log(req);
-      req.on("error", function (error: Error) {
-        //Error from the request
-        //The connection is already closed
-        console.error("[" + req.stats.remoteAddress + ":" + req.stats.remotePort +
-          "] (" + req.file + ") " + error.message);
-      });
-    });
-  });
-}
 
 async function getSerialPortList(): Promise<string[]> {
   return (await SerialPort.list()).map(item => item.path);
