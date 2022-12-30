@@ -17,7 +17,7 @@ module.exports = {
   ],
   "rules": {
     "quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
-    "semi": "error",
+    "semi": "warn",
     "no-console": "warn",
     "require-jsdoc": ["off", {
       "require": {
