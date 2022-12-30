@@ -1,72 +1,85 @@
-import { TelnetClient } from "./client-telnet"
+import { TelnetClient } from "./client-telnet";
+
+export class ClientConfig {
+  public static defaultUser = "admin";
+  public static defaultPassword = "admin@huawei.com";
+  public type = "other";
+  public method: "serial" | "ethernet" | "telnet" | "other" = "other";
+  public target = "serial";
+  public user = "admin";
+  public password = "password";
+  public passwordNew = "";
+  public delay = 1000;
+}
 
 export class ClientWrapper {
-  private client:Client;
-  constructor(){
+  private client: Client | null;
+  private config: ClientConfig | null;
+
+  constructor() {
     this.client = new TelnetClient("telehack.com");
+    this.config = null;
   }
-  public async executeCommandList(commands:string[], sendText:(text:string) => void, receiveText:(text:string) => void){
+
+  public applyConfig(config:ClientConfig){
+    this.config = config;
+  }
+
+  public getBrief():string{
+    if(!this.config){
+      return "";
+    }
+    return this.config.method;
+  }
+
+  public async executeCommandList(commands: string[], sendText: (text: string) => void, receiveText: (text: string) => void) {
+    if(!this.client){
+      return;
+    }
     this.client.setReceive(receiveText);
 
     await this.client.start();
     await this.client.login();
 
-    for(const command of commands){
+    for (const command of commands) {
       sendText(command);
       await this.executeCommand(command);
     }
 
     await this.client.close();
-    
+
     this.client.clearReceive();
   }
 
-  private async executeCommand(command:string){
+  private async executeCommand(command: string) {
+    if(!this.client){
+      return;
+    }
     await this.client.execute(command);
   }
 }
 
-export interface Client {
-  username:string;
-  password:string;
-  newpassword:string;
-  start():Promise<void>;
-  close():Promise<void>;
-  login():Promise<void>;
-  execute(command:string):Promise<void>;
-  setReceive(receiveText:(text:string) => void):void;
-  clearReceive():void;
+export class SwitchLoginConfig {
+  static briefTemplate = "";
+  static defaultUser = "admin";
+  static defaultPassword = "admin@huawei.com";
+  model = "other";
+  method = "other";
+  target = "serial";
+  user = "admin";
+  password = "password";
+  passwordNew = "";
 }
 
-class SerialClient implements Client{
-  public username = "";
-  public password = "";
-  public newpassword = "";
-  private receiveText?:(text:string) => void;
-
-  public async start(): Promise<void> {
-    console.log("start");
-  }
-
-  public async close(): Promise<void> {
-    console.log("close");
-  }
-
-  public async login(): Promise<void> {
-    console.log("login");
-  }
-
-  public async execute(command:string):Promise<void>{
-    console.log(command);
-  }
-
-  public setReceive(receiveText:(text:string) => void):void{
-    this.receiveText = receiveText;
-  }
-
-  public clearReceive(){
-    this.receiveText = undefined;
-  }
+export interface Client {
+  setConfig(config: SwitchLoginConfig): void;
+  getBrief():string;
+  start(): Promise<void>;
+  close(): Promise<void>;
+  login(): Promise<void>;
+  execute(command: string): Promise<void>;
+  setReceive(receiveText: (text: string) => void): void;
+  clearReceive(): void;
 }
 
 export const clientWrapper: ClientWrapper = new ClientWrapper();

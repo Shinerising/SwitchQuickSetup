@@ -1,5 +1,5 @@
 import * as CommandCollection from "./command-collection";
-import { Command } from "./command-collection";
+import { Command, ConsoleCommand } from "./command-collection";
 
 declare type BasicPage = {
   title: string,
@@ -11,7 +11,7 @@ declare type ListPage = BasicPage & {
   list: Page[],
 }
 declare type CommandPage = BasicPage & {
-  command: "quit" | "back" | null | Command<string>,
+  command?: ConsoleCommand | Command<string>,
 }
 declare type Page = ListPage | CommandPage;
 const pageRoot: Page = {

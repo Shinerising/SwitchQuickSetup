@@ -1,46 +1,20 @@
 import prompts from "prompts";
-import stringWidth from "string-width";
 import chalk, { ChalkInstance } from "chalk";
 import { exit } from "process";
-import { getSerialPortList, getInterfaceList } from "./util";
-
-
-/*
-function submitCommand(){
-  const commandList = ``;
-}
-*/
-
-export class SwitchLoginConfig {
-  static defaultUser = "admin";
-  static defaultPassword = "admin@huawei.com";
-  type = "other";
-  method = "other";
-  target = "serial";
-  user = "admin";
-  password = "password";
-  passwordNew = "";
-}
+import { getSerialPortList, getInterfaceList, print, clear, generateHeader } from "./util";
+import { SwitchLoginConfig } from "./client-manager";
 
 export class App {
   serialList: string[] = [];
   ipList: string[] = [];
-  private generateHeader(header: string): string {
-    const length = stringWidth(header);
-    const width = length > 36 ? length + 4 : 40;
-    const padLeft = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length - 1) / 2;
-    const padRight = (width - 2 - length) % 2 === 0 ? (width - 2 - length) / 2 : (width - 2 - length + 1) / 2;
-    return `${"=".repeat(40)}\n*${" ".repeat(padLeft)}${header}${" ".repeat(padRight)}*\n${"=".repeat(40)}`;
-  }
 
   private async printPage<T extends string = string>(header?: string, message?: string | ChalkInstance, questions?: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>, options?: prompts.Options) {
-    const log = console.log;
     if (header) {
-      console.clear();
-      log(chalk.green(this.generateHeader(header)));
+      clear();
+      print(chalk.green(generateHeader(header)));
     }
     if (message) {
-      log(message);
+      print(message);
     }
     if (questions) {
       const result = await prompts(questions, options);
@@ -51,7 +25,7 @@ export class App {
   public async getLoginConfig(): Promise<SwitchLoginConfig> {
     const result = await this.printPage("欢迎使用交换机快速配置工具", "", [{
       type: "select",
-      name: "type",
+      name: "model",
       message: "请选择交换机型号：",
       choices: [
         { title: "华为s5700系列交换机", value: "s5700" },
@@ -115,7 +89,7 @@ export class App {
     this.ipList = getInterfaceList();
 
     const loginConfig = await this.getLoginConfig();
-    console.log(loginConfig);
+    print(loginConfig);
 
     await this.printPage("欢迎使用交换机快速配置工具", "", {
       type: "select",
