@@ -1,19 +1,24 @@
-import { Command } from "./command-collection";
+import { Command, ConsoleCommand } from "./command-collection";
 import { clientWrapper } from "./client-manager";
+import chalk from "chalk";
 import prompts from "prompts";
+import { print } from "./util";
 
-export const executeCommand = async <T extends string>(command: Command<T>): Promise<void> => {
+export const executeCommand = async <T extends string>(command: Command<T> | ConsoleCommand): Promise<void> => {
+  if (typeof(command) === "string") {
+    return;
+  }
   if (command.questions) {
     const result = await prompts(command.questions);
 
     if (command.beforeExecute) {
       try {
         const flag = await command.beforeExecute(result);
-        console.log(flag);
+        print(chalk.yellow(flag));
       }
       catch (e) {
         if (e instanceof Error) {
-          console.error(e.message);
+          print(chalk.red(e.message));
         }
         return;
       }
@@ -21,22 +26,22 @@ export const executeCommand = async <T extends string>(command: Command<T>): Pro
 
     const commands = command.apply(result);
     await clientWrapper.executeCommandList(commands.split("\n"), (text: string) => {
-      console.log(text);
+      print(chalk.blueBright(text));
     }, (text: string) => {
-      console.log(text);
+      print(chalk.gray(text));
     });
 
     if (command.afterExecute) {
       try {
         const flag = await command.afterExecute(result);
-        console.log(flag);
+        print(chalk.yellow(flag));
       }
       catch (e) {
         if (e instanceof Error) {
-          console.error(e.message);
+          print(chalk.red(e.message));
         }
         return;
       }
     }
   }
-}
+};
