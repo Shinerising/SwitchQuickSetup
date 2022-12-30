@@ -16,6 +16,17 @@ module.exports = {
     "@typescript-eslint"
   ],
   "rules": {
-    "quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }]
+    "quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    "semi": "error",
+    "no-console": "warn",
+    "require-jsdoc": ["off", {
+      "require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": true,
+        "ClassDeclaration": true,
+        "ArrowFunctionExpression": true,
+        "FunctionExpression": true
+      }
+    }]
   }
 };
