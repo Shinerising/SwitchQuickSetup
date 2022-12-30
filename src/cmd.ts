@@ -1,5 +1,6 @@
-import { SerialCommander } from "./serial-commander"
+import { SerialCommander } from "./serial-commander";
 import prompts from "prompts";
+import { print } from "./util";
 
 const serialCommander = new SerialCommander({
   port: "COM3", // defaults to /dev/modem
@@ -8,8 +9,8 @@ const serialCommander = new SerialCommander({
   writeDelimiter: "\r", // defaults to '/r/n'
   disableLog: false, // defaults to false
   defaultDelay: 1000, // delay [ms] before the command is issued defaults to 100
-  log: (text:string | string[]) => console.log(`[${new Date().toISOString()}] ${text}`) // default logging function
-})
+  log: (text:string | string[]) => print(`[${new Date().toISOString()}] ${text}`) // default logging function
+});
 
 async function main () {
     const flag = true;
@@ -27,9 +28,9 @@ async function main () {
           expectedResponses: ["Username:", "Password:", ">"], // defaults to ['OK']
           timeout: 50000,  // defaults to 1000
           delay: 100 // defaults to defaultDelay set in the constructor
-        }
-        const response = await serialCommander.send(command, options)
-        console.log(response)
+        };
+        const response = await serialCommander.send(command, options);
+        print(response);
     }
 }
 

@@ -68,7 +68,7 @@ export class SwitchLoginConfig {
   target = "serial";
   user = "admin";
   password = "password";
-  passwordNew = "";
+  passwordNew = "passwordNew";
 }
 
 export interface Client {

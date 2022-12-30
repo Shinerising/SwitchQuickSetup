@@ -1,4 +1,3 @@
-declare type TftpError = NodeJS.ErrnoException;
 declare type TftpStats = {
   blockSize: number,
   windowSize: number,
@@ -12,13 +11,13 @@ declare type TftpStats = {
   remotePort: number
 };
 declare type ClientStream = {
-  on(event: "about", callback: () => void): void,
+  on(event: "abort", callback: () => void): void,
   on(event: "close", callback: () => void): void,
   on(event: "end", callback: () => void): void,
   on(event: "error", callback: (error: TftpError) => void): void,
   on(event: "finish", callback: () => void): void,
   on(event: "stats", callback: (stats: TftpStats) => void): void,
-  about(error?: TftpError): void,
+  abort(error?: TftpError): void,
   close(): void
 };
 declare type GetStream = ClientStream & {
@@ -46,8 +45,8 @@ declare type ServerOption = ClientOption & {
 declare type Client = {
   createGetStream(remoteFile: string, options: { md5: string, sha1: string, userExtensions: object }): ClientStream,
   createPutStream(remoteFile: string, options: { size: string, userExtensions: object }): ClientStream,
-  get(remoteFile: string, localFile?: string, options?: { md5: string, sha1: string, userExtensions: object }, callback: (error: TftpError) => void): void,
-  put(localFile: string, remoteFile?: string, options?: { md5: string, sha1: string, userExtensions: object }, callback: (error: TftpError) => void): void
+  get(remoteFile: string, localFile?: string, options?: { md5: string, sha1: string, userExtensions: object }, callback: (error: Error) => void): void,
+  put(localFile: string, remoteFile?: string, options?: { md5: string, sha1: string, userExtensions: object }, callback: (error: Error) => void): void
 }
 declare type Server = {
   host: string,
@@ -57,9 +56,9 @@ declare type Server = {
   listen(): void,
   requestListener(req, res): void,
   on(event: "close", callback: () => void): void,
-  on(event: "error", callback: (error: TftpError) => void): void,
+  on(event: "error", callback: (error: Error) => void): void,
   on(event: "listening", callback: () => void): void,
-  on(event: "request", callback: (req: GetStream, put: PutStream) => void): void
+  on(event: "request", callback: (req: GetStream, res: PutStream) => void): void
 }
 declare module "tftp" {
   export function createServer(options: ServerOption, requestListener?: (req, res) => void): Server;

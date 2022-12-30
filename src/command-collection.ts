@@ -2,7 +2,7 @@ import fs from "fs";
 import Format from "string-format";
 import prompts from "prompts";
 import { getInterfaceList, __dirname, __isWindows } from "./util";
-import { startServer, stopServer, waitForPut } from "./tftp-handler";
+import { startServer, stopServer, waitForGet, waitForPut } from "./tftp-handler";
 import selectFolder from "win-select-folder";
 
 export type ConsoleCommand = "quit" | "back";
@@ -12,12 +12,12 @@ export type CommandSelector = { model: "default" | string, command: string };
 export class Command<T extends string> {
   public description: string;
   public questions?: Array<prompts.PromptObject<T>>;
-  public beforeExecute?: (result: prompts.Answers<T>) => Promise<string | void>;
-  public afterExecute?: (result: prompts.Answers<T>) => Promise<string | void>;
+  public beforeExecute?: (result: prompts.Answers<T>, state?: unknown[]) => Promise<string | void>;
+  public afterExecute?: (result: prompts.Answers<T>, state?: unknown[]) => Promise<string | void>;
   private command: string | null;
   private commandList: CommandSelector[] | null;
   public apply<T>(args?: T, model?: string): string {
-    if(model && this.commandList) {
+    if (model && this.commandList) {
       const command = this.commandList.find(item => item.model)?.command || this.command || "";
       return args ? Format(command, args as object) : command;
     } else if (this.command) {
@@ -27,8 +27,8 @@ export class Command<T extends string> {
       return "";
     }
   }
-  constructor(command: string | { model: string, command: string }[], description: string, questions?: Array<prompts.PromptObject<T>>, beforeExecute?: (result: prompts.Answers<T>) => Promise<string | void>, afterExecute?: (result: prompts.Answers<T>) => Promise<string | void>) {
-    if(typeof command === "string"){
+  constructor(command: string | { model: string, command: string }[], description: string, questions?: Array<prompts.PromptObject<T>>, beforeExecute?: (result: prompts.Answers<T>, state?: unknown[]) => Promise<string | void>, afterExecute?: (result: prompts.Answers<T>, state?: unknown[]) => Promise<string | void>) {
+    if (typeof command === "string") {
       this.commandList = null;
       this.command = command.trim();
     } else {
@@ -192,7 +192,7 @@ undo arp learning strict
 
 export const configBackupCommand = new Command(`
 tftp {ip} put vrpcfg.zip
-`, "", [{
+`, "备份交换机配置文件", [{
   type: "autocomplete",
   name: "ip",
   message: "请输入本机IP地址",
@@ -202,12 +202,12 @@ tftp {ip} put vrpcfg.zip
 }, {
   type: "autocomplete",
   name: "folder",
-  message: "请输入备份文件保存位置",
+  message: "请输入配置文件保存位置",
   initial: () => __dirname,
   choices: () => __isWindows ? [{ title: __dirname }, { title: "使用文件对话框选择", value: "0" }] : [{ title: __dirname }],
   validate: value => value !== "0" && !fs.existsSync(value) ? "请输入合法的文件保存位置" : true
-}], async (result: prompts.Answers<"ip" | "folder">) => {
-  if(__isWindows && result.folder === "0"){
+}], async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+  if (__isWindows && result.folder === "0") {
     const root = "myComputer";
     const description = "请选择文件保存位置";
     const newFolderButton = 1;
@@ -216,17 +216,70 @@ tftp {ip} put vrpcfg.zip
   }
   if (!fs.existsSync(result.folder)) {
     throw new Error("文件夹不存在！");
-  } else {
-    return "目标文件夹存在：" + result.folder;
   }
-}, async (result: prompts.Answers<"ip" | "folder">) => {
   startServer(result.folder);
-  const file = await waitForPut(20000);
+
+  (async () => {
+    const file = await waitForPut(20000);
+    state?.push(file);
+  })();
+
+  return "目标文件夹存在：" + result.folder;
+}, async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
   stopServer();
+
+  const file = state?.pop();
   if (!file) {
     throw new Error("未能成功收取到文件！");
   } else {
     return "已成功收取到文件：" + file;
+  }
+});
+
+export const configRestoreCommand = new Command(`
+tftp {ip} get vrpcfg.zip
+`, "还原交换机配置文件", [{
+  type: "autocomplete",
+  name: "ip",
+  message: "请输入本机IP地址",
+  initial: () => getInterfaceList()[0] || "0.0.0.0",
+  choices: () => getInterfaceList()?.map(item => ({ title: item })) || [],
+  validate: value => !new RegExp(/^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/).test(value) ? "请输入正确的IP地址" : true
+}, {
+  type: "autocomplete",
+  name: "folder",
+  message: "请输入配置文件保存位置",
+  initial: () => __dirname,
+  choices: () => __isWindows ? [{ title: __dirname }, { title: "使用文件对话框选择", value: "0" }] : [{ title: __dirname }],
+  validate: value => value !== "0" && !fs.existsSync(value) ? "请输入合法的文件保存位置" : true
+}], async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+  if (__isWindows && result.folder === "0") {
+    const root = "myComputer";
+    const description = "请选择文件保存位置";
+    const newFolderButton = 1;
+    const path = await selectFolder({ root, description, newFolderButton });
+    result.folder = path;
+  }
+  if (!fs.existsSync(result.folder)) {
+    throw new Error("文件夹不存在！");
+  } else if (!fs.existsSync(result.folder + "/vrpcfg.zip")) {
+    throw new Error("配置文件不存在！");
+  }
+
+  (async () => {
+    const file = await waitForGet(20000);
+    state?.push(file);
+  })();
+
+  return "目标文件夹存在：" + result.folder;
+}, async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+  stopServer();
+
+  const file = state?.pop();
+  if (!file) {
+    throw new Error("未能成功发送文件！");
+  } else {
+    return "已成功发送文件：" + file;
   }
 });
 

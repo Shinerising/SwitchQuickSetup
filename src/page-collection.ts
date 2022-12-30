@@ -14,6 +14,7 @@ declare type CommandPage = BasicPage & {
   command?: ConsoleCommand | Command<string>,
 }
 declare type Page = ListPage | CommandPage;
+
 const pageRoot: Page = {
   title: "",
   value: 0,

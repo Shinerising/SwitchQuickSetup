@@ -10,10 +10,11 @@ export const executeCommand = async <T extends string>(command: Command<T> | Con
   }
   if (command.questions) {
     const result = await prompts(command.questions);
+    const state:unknown[] = [];
 
     if (command.beforeExecute) {
       try {
-        const flag = await command.beforeExecute(result);
+        const flag = await command.beforeExecute(result, state);
         print(chalk.yellow(flag));
       }
       catch (e) {
@@ -33,7 +34,7 @@ export const executeCommand = async <T extends string>(command: Command<T> | Con
 
     if (command.afterExecute) {
       try {
-        const flag = await command.afterExecute(result);
+        const flag = await command.afterExecute(result, state);
         print(chalk.yellow(flag));
       }
       catch (e) {

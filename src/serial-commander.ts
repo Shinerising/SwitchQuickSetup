@@ -1,5 +1,6 @@
-import { SerialPort } from "serialport"
-import { ReadlineParser } from "@serialport/parser-readline"
+import { SerialPort } from "serialport";
+import { ReadlineParser } from "@serialport/parser-readline";
+import { print } from "./util";
 
 declare interface SerialCommanderOption {
   port: string;
@@ -27,19 +28,19 @@ export class SerialCommander {
     writeDelimiter: "\r\n",
     disableLog: false,
     defaultDelay: 100,
-    log: string => console.log(`[${new Date().toISOString()}] ${string}`)
+    log: string => print(`[${new Date().toISOString()}] ${string}`)
   }) {
     this.log = option.log;
-    this.isLogEnabled = !option.disableLog
-    this.defaultDelay = option.defaultDelay
-    this.fallbackSerialDataHandler = (line: string) => this.log(`{answer given outside command scope} ${line}`)
-    this.serialDataHandler = this.fallbackSerialDataHandler
-    this.writeDelimiter = option.writeDelimiter
+    this.isLogEnabled = !option.disableLog;
+    this.defaultDelay = option.defaultDelay;
+    this.fallbackSerialDataHandler = (line: string) => this.log(`{answer given outside command scope} ${line}`);
+    this.serialDataHandler = this.fallbackSerialDataHandler;
+    this.writeDelimiter = option.writeDelimiter;
 
-    this.port = new SerialPort({ path: option.port, baudRate: option.baudrate })
-    this.parser = new ReadlineParser({ delimiter: option.readDelimiter })
-    this.port.pipe(this.parser)
-    this.parser.on("data", (line: string) => this.serialDataHandler(line))
+    this.port = new SerialPort({ path: option.port, baudRate: option.baudrate });
+    this.parser = new ReadlineParser({ delimiter: option.readDelimiter });
+    this.port.pipe(this.parser);
+    this.parser.on("data", (line: string) => this.serialDataHandler(line));
   }
 
   async send(command: string, {
@@ -47,34 +48,34 @@ export class SerialCommander {
     timeout = 1000,
     delay = this.defaultDelay
   } = {}) {
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await new Promise(resolve => setTimeout(resolve, delay));
 
-    const startTime = new Date().getTime()
-    let response = ""
+    const startTime = new Date().getTime();
+    let response = "";
 
     return new Promise((resolve, reject) => {
       const errorTimeout = setTimeout(() => {
-        this.serialDataHandler = this.fallbackSerialDataHandler
-        reject(new Error("Request timed out before a satisfactory answer was given"))
-      }, timeout)
+        this.serialDataHandler = this.fallbackSerialDataHandler;
+        reject(new Error("Request timed out before a satisfactory answer was given"));
+      }, timeout);
 
-      const escapedCommand = `${command}${this.writeDelimiter}`
-      this.port.write(escapedCommand)
-      if (this.isLogEnabled) this.log(`>> ${command}`)
+      const escapedCommand = `${command}${this.writeDelimiter}`;
+      this.port.write(escapedCommand);
+      if (this.isLogEnabled) this.log(`>> ${command}`);
 
       this.serialDataHandler = (line: string | string[]) => {
-        response += line
+        response += line;
 
         const isCommandSuccessfullyTerminated = expectedResponses.some(
           expectedResponse => line.includes(expectedResponse)
-        )
+        );
         if (isCommandSuccessfullyTerminated) {
-          if (this.isLogEnabled) this.log(`<< ${line}`)
+          if (this.isLogEnabled) this.log(`<< ${line}`);
 
-          this.serialDataHandler = this.fallbackSerialDataHandler
-          clearTimeout(errorTimeout)
+          this.serialDataHandler = this.fallbackSerialDataHandler;
+          clearTimeout(errorTimeout);
 
-          const endTime = new Date().getTime()
+          const endTime = new Date().getTime();
 
           resolve({
             command,
@@ -82,12 +83,12 @@ export class SerialCommander {
             endTime,
             executionTime: endTime - startTime,
             response
-          })
+          });
         } else {
-          if (this.isLogEnabled) this.log(line)
+          if (this.isLogEnabled) this.log(line);
         }
-      }
-    })
+      };
+    });
   }
 
   close() {
