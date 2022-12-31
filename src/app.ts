@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { exit } from "process";
-import { clientWrapper } from "./client-manager";
+import { ClientConfig, clientWrapper } from "./client-manager";
 import { delay, getSerialPortList, print } from "./util";
 import { Page, ListPage, CommandPage, pageRoot } from "./page-collection";
-import { printPage, converListToQuestions, getLoginConfig, confirmQuit } from "./page-helper";
+import { printPage, converListToQuestions, getLoginConfig, confirmQuit, saveConfigFile } from "./page-helper";
 import { executeCommand } from "./command-manager";
 
 /**
@@ -43,6 +43,12 @@ export class App {
       print(chalk.red("交换机无法登录，程序即将退出！"));
       return false;
     }
+    if (loginConfig.password === ClientConfig.defaultPassword) {
+      loginConfig.password = loginConfig.passwordNew;
+    }
+    clientWrapper.applyConfig(loginConfig);
+    saveConfigFile(loginConfig);
+
     pageRoot.info = clientWrapper.getInfo();
     return true;
   }
