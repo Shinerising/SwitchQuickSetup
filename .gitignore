@@ -112,4 +112,5 @@ dist
 Obj
 
 /bin
-src/switch.conf
+
+switch.conf

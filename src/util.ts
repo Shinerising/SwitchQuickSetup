@@ -1,6 +1,4 @@
-import path from "path";
 import stringWidth from "string-width";
-import { fileURLToPath } from "url";
 import { SerialPort } from "serialport";
 import { networkInterfaces } from "os";
 
@@ -23,11 +21,10 @@ const getInterfaceList = () => {
   return results;
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.cwd();
 const __isWindows = process.platform === "win32";
 
-export { getSerialPortList, getInterfaceList, __filename, __dirname, __isWindows };
+export { getSerialPortList, getInterfaceList, __dirname, __isWindows };
 
 // eslint-disable-next-line no-console
 export const print = console.log;
