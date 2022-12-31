@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import Format from "string-format";
 import prompts from "prompts";
 import { __dirname, __isWindows, getInterfaceList } from "./util";
@@ -266,7 +267,7 @@ tftp {ip} get vrpcfg.zip
   }
   if (!fs.existsSync(result.folder)) {
     throw new Error("文件夹不存在！");
-  } else if (!fs.existsSync(result.folder + "/vrpcfg.zip")) {
+  } else if (!fs.existsSync(path.join(result.folder, "vrpcfg.zip"))) {
     throw new Error("配置文件不存在！");
   }
 

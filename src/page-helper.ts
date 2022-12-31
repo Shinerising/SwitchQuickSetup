@@ -1,5 +1,10 @@
+import fs from "fs";
+import path from "path";
 import prompts from "prompts";
 import chalk from "chalk";
+import AES from "crypto-js/aes";
+import enc from "crypto-js/enc-utf8";
+import { __dirname } from "./util";
 import { print, clear, generateHeader } from "./util";
 import { ClientConfig } from "./client-manager";
 
@@ -38,7 +43,51 @@ export const converListToQuestions = <T extends string>(name: T, list: { title: 
   } as prompts.PromptObject<T>;
 };
 
+const secret = "MIICXQIBAAKBgQDC";
+const configFile = "switch.conf";
+
+const loadConfigFile = () => {
+  const filename = path.join(__dirname, configFile);
+  try {
+    if (fs.existsSync(filename)) {
+      const data = fs.readFileSync(path.join(__dirname, configFile)).toString();
+      const decrypted = AES.decrypt(data, secret);
+      const config = JSON.parse(decrypted.toString(enc)) as ClientConfig;
+      return config;
+    }
+  }
+  catch {
+    return null;
+  }
+  return null;
+};
+
+export const saveConfigFile = (config: ClientConfig) => {
+  const filename = path.join(__dirname, configFile);
+  try {
+    const encrypted = AES.encrypt(JSON.stringify(config), secret);
+    fs.writeFileSync(filename, encrypted.toString(), {});
+  }
+  catch {
+    return;
+  }
+};
+
 export const getLoginConfig = async (serialList: string[]): Promise<ClientConfig | null> => {
+  const savedConfig = loadConfigFile();
+
+  if (savedConfig) {
+    const result = await printPage("欢迎使用交换机快速配置工具", "", {
+      type: "confirm",
+      name: "value",
+      message: "是否采用上一次登录信息？",
+      initial: true
+    });
+    if (result?.value) {
+      return savedConfig;
+    }
+  }
+
   const result = await printPage("欢迎使用交换机快速配置工具", "", [{
     type: "select",
     name: "model",
