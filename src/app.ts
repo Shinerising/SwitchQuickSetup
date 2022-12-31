@@ -71,7 +71,7 @@ export class App {
         if (listPage.list) {
           const title = listPage.title;
           const message = listPage.alert ? chalk.red(listPage.alert) : listPage.info;
-          const questions = converListToQuestions("page", listPage.list.map(item => ({ title: item.title + ((item as ListPage).list ? "…" : ""), value: item })));
+          const questions = converListToQuestions("page", listPage.list.map(item => ({ title: item.title + ((item as ListPage).list ? "…" : ""), value: item, disabled: !((item as ListPage).list || (item as CommandPage).command) })));
           const result = await printPage(title, message, questions);
           if (!result) {
             const page = this.pageStack.pop();
