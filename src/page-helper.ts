@@ -20,7 +20,7 @@ export const printPage = async <T extends string>(header?: string, message?: str
   }
   if (questions) {
     const result = await prompts(questions, options);
-    if(Object.keys(result).length === 0){
+    if (Object.keys(result).length === 0) {
       return null;
     }
     return result;
@@ -80,18 +80,18 @@ export const getLoginConfig = async (serialList: string[]): Promise<ClientConfig
     message: "请输入登录密码：",
     validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
   }, {
-    type: (_prev,result) => result.password === ClientConfig.defaultPassword ? "password" : null,
+    type: (_prev, result) => result.password === ClientConfig.defaultPassword ? "password" : null,
     name: "passwordNew",
     message: "您输入的是系统默认密码，请输入新的密码：",
     validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
   }, {
-    type: (_prev,result) => result.password === ClientConfig.defaultPassword ? "password" : null,
+    type: (_prev, result) => result.password === ClientConfig.defaultPassword ? "password" : null,
     name: "passwordNew2",
     message: "请再次输入新的密码：",
     validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
   }]);
-  
-  if(!result){
+
+  if (!result) {
     print(chalk.red(""));
     return null;
   }
@@ -102,4 +102,17 @@ export const getLoginConfig = async (serialList: string[]): Promise<ClientConfig
   }
 
   return result as ClientConfig;
+};
+
+export const confirmQuit = async () => {
+  const result = await printPage("消息提示", "是否确定退出本程序？", {
+    type: "confirm",
+    name: "value",
+    message: "是否退出程序？",
+    initial: true
+  });
+  if (result) {
+    return !!result.value;
+  }
+  return true;
 };

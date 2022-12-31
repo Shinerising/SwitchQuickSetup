@@ -29,6 +29,13 @@ export class ClientWrapper {
     return this.client?.getBrief();
   }
 
+  public getInfo(): string {
+    if (!this.client) {
+      return "";
+    }
+    return this.client?.getInfo();
+  }
+
   public async tryLogin() {
     if (!this.client) {
       return false;
@@ -69,6 +76,7 @@ export class ClientWrapper {
 export interface Client {
   setConfig(config: ClientConfig): void;
   getBrief(): string;
+  getInfo(): string;
   start(): Promise<void>;
   close(): Promise<void>;
   login(): Promise<void>;

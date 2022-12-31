@@ -3,7 +3,7 @@ import { exit } from "process";
 import { clientWrapper } from "./client-manager";
 import { delay, getSerialPortList, print } from "./util";
 import { Page, ListPage, CommandPage, pageRoot } from "./page-collection";
-import { printPage, converListToQuestions, getLoginConfig } from "./page-helper";
+import { printPage, converListToQuestions, getLoginConfig, confirmQuit } from "./page-helper";
 import { executeCommand } from "./command-manager";
 
 export class App {
@@ -33,10 +33,11 @@ export class App {
       print(chalk.red("交换机无法登录，程序即将退出！"));
       return false;
     }
+    pageRoot.info = clientWrapper.getInfo();
     return true;
   }
 
-  private async working(){
+  private async working() {
     let executeResult: void | boolean;
 
     this.pageCurrent = pageRoot;
@@ -51,7 +52,7 @@ export class App {
         if (listPage.list) {
           const title = listPage.title;
           const message = listPage.alert ? chalk.red(listPage.alert) : listPage.info;
-          const questions = converListToQuestions("page", listPage.list.map(item => ({ title: item.title + ((item as ListPage).list ? "…" : "") , value: item })));
+          const questions = converListToQuestions("page", listPage.list.map(item => ({ title: item.title + ((item as ListPage).list ? "…" : ""), value: item })));
           const result = await printPage(title, message, questions);
           if (!result) {
             const page = this.pageStack.pop();
@@ -75,7 +76,7 @@ export class App {
           const title = commandPage.title;
           const message = commandPage.alert ? chalk.red(commandPage.alert) : commandPage.info;
           const command = commandPage.command;
-          if(typeof command === "string"){
+          if (typeof command === "string") {
             if (command === "back") {
               this.pageStack.pop();
               const page = this.pageStack.pop();
@@ -90,6 +91,9 @@ export class App {
             }
           } else {
             executeResult = await executeCommand(command, title, message);
+
+            this.pageCurrent = pageRoot;
+            this.pageStack = [];
           }
         } else {
           executeResult = false;
@@ -99,21 +103,21 @@ export class App {
     while (executeResult !== false);
   }
 
-  private async quiting(){
-    return true;
+  private async quiting() {
+    return await confirmQuit();
   }
 
   /**
    * Start console App
    */
   public async start() {
-    if(!(await this.initialize())){
+    if (!(await this.initialize())) {
       return exit(0);
     }
 
-    do{
+    do {
       await this.working();
-    } while(!(await this.quiting()));
+    } while (!(await this.quiting()));
 
     return exit(0);
   }
