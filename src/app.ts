@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { exit } from "process";
-import { getSerialPortList, print } from "./util";
 import { clientWrapper } from "./client-manager";
-import { printPage } from "./page-helper";
 import { getLoginConfig } from "./initialize";
+import { getSerialPortList, print } from "./util";
+import { printPage } from "./page-helper";
 
 export class App {
 

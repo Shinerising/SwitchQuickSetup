@@ -19,6 +19,7 @@ module.exports = {
     "quotes": ["warn", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "semi": "warn",
     "no-console": "warn",
+    "eqeqeq": "error",
     "require-jsdoc": ["off", {
       "require": {
         "FunctionDeclaration": true,

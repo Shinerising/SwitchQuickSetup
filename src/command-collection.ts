@@ -1,7 +1,7 @@
 import fs from "fs";
 import Format from "string-format";
 import prompts from "prompts";
-import { getInterfaceList, __dirname, __isWindows } from "./util";
+import { __dirname, __isWindows, getInterfaceList } from "./util";
 import { startServer, stopServer, waitForGet, waitForPut } from "./tftp-handler";
 import selectFolder from "win-select-folder";
 
