@@ -6,15 +6,25 @@ import { Page, ListPage, CommandPage, pageRoot } from "./page-collection";
 import { printPage, converListToQuestions, getLoginConfig, confirmQuit } from "./page-helper";
 import { executeCommand } from "./command-manager";
 
+/**
+ * Main app
+ */
 export class App {
   private pageCurrent: Page;
   private pageStack: Page[];
 
+  /**
+   * constructor
+   */
   constructor() {
     this.pageCurrent = pageRoot;
     this.pageStack = [];
   }
 
+  /**
+   * Initialize app config & try log in
+   * @returns true if log in successfully
+   */
   private async initialize() {
     await printPage("欢迎使用交换机快速配置工具", "正在检查系统配置");
     const serialList = await getSerialPortList();
@@ -37,6 +47,9 @@ export class App {
     return true;
   }
 
+  /**
+   * Show pages and submit commands
+   */
   private async working() {
     let executeResult: void | boolean;
 
@@ -103,12 +116,16 @@ export class App {
     while (executeResult !== false);
   }
 
+  /**
+   * Quit confirm
+   * @returns true if confirm quitting
+   */
   private async quiting() {
     return await confirmQuit();
   }
 
   /**
-   * Start console App
+   * Start console app
    */
   public async start() {
     if (!(await this.initialize())) {
