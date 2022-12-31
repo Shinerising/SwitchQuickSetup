@@ -1,7 +1,6 @@
 import { TelnetClient } from "./client-telnet";
 
 export class ClientConfig {
-  public static briefTemplate = "交换机型号：{model}；登录方法：{method}；目标地址：{target}；用户名：{user}";
   public static defaultUser = "admin";
   public static defaultPassword = "admin@huawei.com";
   public model = "other";
@@ -14,15 +13,13 @@ export class ClientConfig {
 
 export class ClientWrapper {
   private client: Client | null;
-  private config: ClientConfig | null;
 
   constructor() {
     this.client = new TelnetClient("telehack.com");
-    this.config = null;
   }
 
   public applyConfig(config: ClientConfig) {
-    this.config = config;
+    this.client?.setConfig(config);
   }
 
   public getBrief(): string {
@@ -36,9 +33,9 @@ export class ClientWrapper {
     if (!this.client) {
       return false;
     }
-    await this.client.start();
-    await this.client.login();
-    await this.client.close();
+    //await this.client.start();
+    //await this.client.login();
+    //await this.client.close();
     return true;
   }
 

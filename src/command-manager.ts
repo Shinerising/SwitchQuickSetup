@@ -1,21 +1,18 @@
-import { Command, ConsoleCommand } from "./command-collection";
+import { Command } from "./command-collection";
 import { clientWrapper } from "./client-manager";
 import chalk from "chalk";
 import { print } from "./util";
 import { printPage } from "./page-helper";
 
-export const executeCommand = async <T extends string>(command: Command<T> | ConsoleCommand): Promise<boolean | void> => {
-  if (typeof(command) === "string") {
-    return;
-  }
+export const executeCommand = async <T extends string>(command: Command<T>, header?: string, message?: string): Promise<boolean | void> => {
   if (command.questions) {
-    const result = await printPage("", "", command.questions);
-    
-    if(!result){
+    const result = await printPage(header, message, command.questions);
+
+    if (!result) {
       return;
     }
 
-    const state:unknown[] = [];
+    const state: unknown[] = [];
 
     if (command.beforeExecute) {
       try {

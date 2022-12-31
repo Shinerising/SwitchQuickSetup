@@ -1,71 +1,119 @@
 import chalk from "chalk";
 import { exit } from "process";
 import { clientWrapper } from "./client-manager";
-import { getLoginConfig } from "./initialize";
-import { getSerialPortList, print } from "./util";
-import { printPage } from "./page-helper";
+import { delay, getSerialPortList, print } from "./util";
+import { Page, ListPage, CommandPage, pageRoot } from "./page-collection";
+import { printPage, converListToQuestions, getLoginConfig } from "./page-helper";
+import { executeCommand } from "./command-manager";
 
 export class App {
+  private pageCurrent: Page;
+  private pageStack: Page[];
 
-  public async start() {
+  constructor() {
+    this.pageCurrent = pageRoot;
+    this.pageStack = [];
+  }
+
+  private async initialize() {
     await printPage("欢迎使用交换机快速配置工具", "正在检查系统配置");
     const serialList = await getSerialPortList();
 
     const loginConfig = await getLoginConfig(serialList);
-    if(!loginConfig){
+    if (!loginConfig) {
       print(chalk.red("登录配置错误，程序即将退出！"));
-      return exit(0);
+      return false;
     }
     clientWrapper.applyConfig(loginConfig);
     const brief = clientWrapper.getBrief();
-    print(brief);
+    await printPage("正在尝试登录交换机", brief);
+    await delay(1000);
     const available = await clientWrapper.tryLogin();
     if (!available) {
       print(chalk.red("交换机无法登录，程序即将退出！"));
+      return false;
+    }
+    return true;
+  }
+
+  private async working(){
+    let executeResult: void | boolean;
+
+    this.pageCurrent = pageRoot;
+    this.pageStack = [];
+
+    do {
+      executeResult = undefined;
+
+      const page = this.pageCurrent;
+      if ((page as ListPage).list) {
+        const listPage = page as ListPage;
+        if (listPage.list) {
+          const title = listPage.title;
+          const message = listPage.alert ? chalk.red(listPage.alert) : listPage.info;
+          const questions = converListToQuestions("page", listPage.list.map(item => ({ title: item.title + ((item as ListPage).list ? "…" : "") , value: item })));
+          const result = await printPage(title, message, questions);
+          if (!result) {
+            const page = this.pageStack.pop();
+            if (!page) {
+              executeResult = false;
+            } else {
+              this.pageCurrent = page;
+              executeResult = true;
+            }
+            continue;
+          }
+          executeResult = true;
+          this.pageStack.push(this.pageCurrent);
+          this.pageCurrent = result.page;
+        } else {
+          executeResult = false;
+        }
+      } else if ((page as CommandPage).command) {
+        const commandPage = page as CommandPage;
+        if (commandPage.command) {
+          const title = commandPage.title;
+          const message = commandPage.alert ? chalk.red(commandPage.alert) : commandPage.info;
+          const command = commandPage.command;
+          if(typeof command === "string"){
+            if (command === "back") {
+              this.pageStack.pop();
+              const page = this.pageStack.pop();
+              if (!page) {
+                executeResult = false;
+              } else {
+                this.pageCurrent = page;
+                executeResult = true;
+              }
+            } else if (command === "quit") {
+              executeResult = false;
+            }
+          } else {
+            executeResult = await executeCommand(command, title, message);
+          }
+        } else {
+          executeResult = false;
+        }
+      }
+    }
+    while (executeResult !== false);
+  }
+
+  private async quiting(){
+    return true;
+  }
+
+  /**
+   * Start console App
+   */
+  public async start() {
+    if(!(await this.initialize())){
       return exit(0);
     }
 
-    await printPage("欢迎使用交换机快速配置工具", "", {
-      type: "select",
-      name: "type",
-      message: "请选择需要执行的功能：",
-      choices: [
-        { title: "修改交换机名称", value: 1 },
-        { title: "划分VLAN和网口", value: 2 },
-        { title: "设置Telnet功能", value: 3 },
-        { title: "设置SNMPV2功能", value: 4 },
-        { title: "设置SNMPV3功能", value: 5 },
-        { title: "使用其他相关设置功能", value: 6 },
-        { title: "查看、备份或恢复交换机配置", value: 7 },
-        { title: "使用交换机状态监视工具", value: 8 },
-        { title: "使用关键性设置功能", value: 9 },
-        { title: "返回初始设置界面", value: 0 }
-      ],
-      hint: "请使用方向键进行选择，回车键确认。",
-      initial: 0
-    });
-
-    await printPage("欢迎使用交换机快速配置工具", chalk.red("注意！以下操作可能对交换机工作产生严重影响，请谨慎操作！"), {
-      type: "select",
-      name: "type",
-      message: "请选择需要执行的功能：",
-      choices: [
-        { title: "重启交换机", value: "1" },
-        { title: "修改用户登录密码", value: "2" },
-        { title: "重置所有用户自定义设置", value: "3" },
-        { title: "恢复到出厂设置", value: "4" },
-        { title: "返回上一设置界面", value: "0" }
-      ],
-      hint: "请使用方向键进行选择，回车键确认。",
-      initial: 0
-    });
-
-    await printPage("消息提示", "对不起，现在不支持任何交换机!", {
-      type: "confirm",
-      name: "value",
-      message: "是否退出程序？",
-      initial: true
-    });
+    do{
+      await this.working();
+    } while(!(await this.quiting()));
 
     return exit(0);
   }

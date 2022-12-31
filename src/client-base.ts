@@ -3,6 +3,7 @@ import Format from "string-format";
 import { ClientConfig } from "./client-manager";
 
 export class BaseClient {
+  private static briefTemplate = "交换机型号：{model}\n登录方法：{method}\n目标地址：{target}\n用户名：{user}";
   protected config?: ClientConfig;
   protected receiveText?: (text: string) => void;
 
@@ -20,7 +21,7 @@ export class BaseClient {
       target: chalk.bold(this.config.target),
       user: chalk.bold(this.config.user)
     };
-    return Format(ClientConfig.briefTemplate, args);
+    return Format(BaseClient.briefTemplate, args);
   }
 
   public setReceive(receiveText: (text: string) => void): void {
