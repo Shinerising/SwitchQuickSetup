@@ -1,15 +1,15 @@
 import { TelnetClient } from "./client-telnet";
 
 export class ClientConfig {
+  public static briefTemplate = "交换机型号：{model}；登录方法：{method}；目标地址：{target}；用户名：{user}";
   public static defaultUser = "admin";
   public static defaultPassword = "admin@huawei.com";
-  public type = "other";
-  public method: "serial" | "ethernet" | "telnet" | "other" = "other";
-  public target = "serial";
+  public model = "other";
+  public method: "serial" | "telnet" | "ethernet" | "other" = "other";
+  public target = "";
   public user = "admin";
   public password = "password";
-  public passwordNew = "";
-  public delay = 1000;
+  public passwordNew = "passwordNew";
 }
 
 export class ClientWrapper {
@@ -21,19 +21,29 @@ export class ClientWrapper {
     this.config = null;
   }
 
-  public applyConfig(config:ClientConfig){
+  public applyConfig(config: ClientConfig) {
     this.config = config;
   }
 
-  public getBrief():string{
-    if(!this.config){
+  public getBrief(): string {
+    if (!this.client) {
       return "";
     }
-    return this.config.method;
+    return this.client?.getBrief();
+  }
+
+  public async tryLogin() {
+    if (!this.client) {
+      return false;
+    }
+    await this.client.start();
+    await this.client.login();
+    await this.client.close();
+    return true;
   }
 
   public async executeCommandList(commands: string[], sendText: (text: string) => void, receiveText: (text: string) => void) {
-    if(!this.client){
+    if (!this.client) {
       return;
     }
     this.client.setReceive(receiveText);
@@ -52,28 +62,16 @@ export class ClientWrapper {
   }
 
   private async executeCommand(command: string) {
-    if(!this.client){
+    if (!this.client) {
       return;
     }
     await this.client.execute(command);
   }
 }
 
-export class SwitchLoginConfig {
-  static briefTemplate = "";
-  static defaultUser = "admin";
-  static defaultPassword = "admin@huawei.com";
-  model = "other";
-  method = "other";
-  target = "serial";
-  user = "admin";
-  password = "password";
-  passwordNew = "passwordNew";
-}
-
 export interface Client {
-  setConfig(config: SwitchLoginConfig): void;
-  getBrief():string;
+  setConfig(config: ClientConfig): void;
+  getBrief(): string;
   start(): Promise<void>;
   close(): Promise<void>;
   login(): Promise<void>;

@@ -190,6 +190,10 @@ system-view
 undo arp learning strict
 `, "");
 
+export const configPreviewCommand = new Command(`
+display current-configuration
+`, "查看交换机当前配置文件");
+
 export const configBackupCommand = new Command(`
 tftp {ip} put vrpcfg.zip
 `, "备份交换机配置文件", [{

@@ -1,15 +1,20 @@
 import { Command, ConsoleCommand } from "./command-collection";
 import { clientWrapper } from "./client-manager";
 import chalk from "chalk";
-import prompts from "prompts";
 import { print } from "./util";
+import { printPage } from "./page-helper";
 
-export const executeCommand = async <T extends string>(command: Command<T> | ConsoleCommand): Promise<void> => {
+export const executeCommand = async <T extends string>(command: Command<T> | ConsoleCommand): Promise<boolean | void> => {
   if (typeof(command) === "string") {
     return;
   }
   if (command.questions) {
-    const result = await prompts(command.questions);
+    const result = await printPage("", "", command.questions);
+    
+    if(!result){
+      return;
+    }
+
     const state:unknown[] = [];
 
     if (command.beforeExecute) {
@@ -44,5 +49,7 @@ export const executeCommand = async <T extends string>(command: Command<T> | Con
         return;
       }
     }
+
+    return true;
   }
 };

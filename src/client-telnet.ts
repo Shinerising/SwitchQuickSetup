@@ -1,10 +1,9 @@
 import { Telnet } from "telnet-client";
-import { Client, SwitchLoginConfig } from "./client-manager";
+import { Client } from "./client-manager";
 import { delay } from "./util";
+import { BaseClient } from "./client-base";
 
-export class TelnetClient implements Client {
-  private config?: SwitchLoginConfig;
-  private receiveText?: (text: string) => void;
+export class TelnetClient extends BaseClient implements Client {
   private connection = new Telnet();
   private params = {
     port: 23,
@@ -16,15 +15,8 @@ export class TelnetClient implements Client {
   };
 
   constructor(host: string) {
+    super();
     this.params.host = host;
-  }
-
-  public setConfig(config: SwitchLoginConfig): void {
-    this.config = config;
-  }
-
-  public getBrief(): string {
-      return "";
   }
 
   public async start(): Promise<void> {
@@ -59,13 +51,5 @@ export class TelnetClient implements Client {
     if(this.receiveText){
       this.receiveText(result);
     }
-  }
-
-  public setReceive(receiveText: (text: string) => void): void {
-    this.receiveText = receiveText;
-  }
-
-  public clearReceive() {
-    this.receiveText = undefined;
   }
 }

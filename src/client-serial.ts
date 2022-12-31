@@ -1,28 +1,8 @@
-import chalk from "chalk";
-import Format from "string-format";
-import { Client, SwitchLoginConfig } from "./client-manager";
+import { Client } from "./client-manager";
 import { print } from "./util";
+import { BaseClient } from "./client-base";
 
-export class SerialClient implements Client {
-  private config?: SwitchLoginConfig;
-  private receiveText?: (text: string) => void;
-
-  public setConfig(config: SwitchLoginConfig): void {
-    this.config = config;
-  }
-
-  public getBrief(): string {
-    if (!this.config) {
-      return "";
-    }
-    const args = {
-      model: chalk.bold(this.config.model),
-      method: chalk.bold(this.config.method),
-      target: chalk.bold(this.config.target),
-      user: chalk.bold(this.config.user)
-    };
-    return Format(SwitchLoginConfig.briefTemplate, args);
-  }
+export class SerialClient extends BaseClient implements Client {
 
   public async start(): Promise<void> {
     print("start");
@@ -38,13 +18,5 @@ export class SerialClient implements Client {
 
   public async execute(command: string): Promise<void> {
     print(command);
-  }
-
-  public setReceive(receiveText: (text: string) => void): void {
-    this.receiveText = receiveText;
-  }
-
-  public clearReceive() {
-    this.receiveText = undefined;
   }
 }

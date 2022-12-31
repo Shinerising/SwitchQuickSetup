@@ -52,9 +52,9 @@ const pageRoot: Page = {
       {
         title: "查看、备份或恢复交换机配置", value: 7, list:
           [
-            { title: "查看当前交换机配置", value: 1 },
+            { title: "查看当前交换机配置", value: 1, command: CommandCollection.configPreviewCommand },
             { title: "备份当前交换机配置", value: 2, command: CommandCollection.configBackupCommand },
-            { title: "还原当前交换机配置", value: 3 },
+            { title: "还原当前交换机配置", value: 3, command: CommandCollection.configRestoreCommand },
             { title: "返回上一设置界面", value: 0, command: "back" }
           ]
       },
