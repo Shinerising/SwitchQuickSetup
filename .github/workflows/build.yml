@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [lts/*]
+        node-version: [ 18 ]
 
     env:
       Archive_Name: '../SwitchSetup_Preview.zip'
