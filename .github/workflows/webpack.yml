@@ -1,0 +1,51 @@
+name: NodeJS with Webpack
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    env:
+      Archive_Name: '../SwitchSetup_Preview.zip'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install
+      run: npm ci
+
+    - name: Build
+      run: npm run build-win
+
+    - name: Add manifest
+      run: node manifest.js
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@main
+      with:
+        type: "zip"
+        path: "./bin/*"
+        filename: ${{ env.Archive_Name }}
+
+    - name: Generate Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: ${{ env.Archive_Name }}
