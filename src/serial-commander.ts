@@ -38,7 +38,7 @@ export class SerialCommander {
     this.writeDelimiter = option.writeDelimiter;
 
     this.port = new SerialPort({ path: option.port, baudRate: option.baudrate });
-    this.parser = new ReadlineParser ({ delimiter: ["\n".charCodeAt(0), "\r".charCodeAt(0), ":".charCodeAt(0)] });
+    this.parser = new ReadlineParser ();
     this.port.pipe(this.parser);
     this.parser.on("data", (line: string) => this.serialDataHandler(line));
   }

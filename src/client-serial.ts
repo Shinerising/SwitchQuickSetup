@@ -24,7 +24,7 @@ export class SerialClient extends BaseClient implements Client {
       writeDelimiter: "\n",
       disableLog: true,
       defaultDelay: 1000,
-      log: (text: string | string[]) => print(text) 
+      log: (text: string | string[]) => {return}
     });
   }
 
