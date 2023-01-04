@@ -1,5 +1,5 @@
 import { SerialPort } from "serialport";
-import { ReadlineParser  } from "@serialport/parser-readline";
+import { ReadlineParser } from "@serialport/parser-readline";
 import { print } from "./util";
 
 declare interface SerialCommanderOption {
@@ -20,7 +20,7 @@ export class SerialCommander {
   private fallbackSerialDataHandler: (data: string) => void;
   private serialDataHandler: (data: string) => void;
   private writeDelimiter: string;
-  private parser: ReadlineParser ;
+  private parser: ReadlineParser;
   constructor(option: SerialCommanderOption = {
     port: "/dev/modem",
     baudrate: 115200,
@@ -38,7 +38,7 @@ export class SerialCommander {
     this.writeDelimiter = option.writeDelimiter;
 
     this.port = new SerialPort({ path: option.port, baudRate: option.baudrate });
-    this.parser = new ReadlineParser ();
+    this.parser = new ReadlineParser();
     this.port.pipe(this.parser);
     this.parser.on("data", (line: string) => this.serialDataHandler(line));
   }
@@ -48,10 +48,9 @@ export class SerialCommander {
     timeout = 1000,
     delay = this.defaultDelay
   } = {}): Promise<string> {
-    await new Promise(resolve => setTimeout(resolve, delay));
 
-    return new Promise((resolve, reject) => {
-      let response = "";
+    return new Promise((resolve) => {
+      const response: string[] = [];
       let startTime = Date.now();
       const interval = setInterval(() => {
         if (Date.now() - startTime < timeout) {
@@ -59,17 +58,20 @@ export class SerialCommander {
         }
         clearInterval(interval);
         this.serialDataHandler = this.fallbackSerialDataHandler;
-        resolve(response);
-      }, 100);
+        resolve(response.join("\n").trim());
+      }, delay);
 
       const escapedCommand = `${command}${this.writeDelimiter}`;
       this.port.write(escapedCommand);
       if (this.isLogEnabled) this.log(`>> ${command}`);
 
       this.serialDataHandler = (line: string | string[]) => {
-        console.log(line);
         startTime = Date.now();
-        response += line;
+        if (typeof line === "string") {
+          response.push(line);
+        } else {
+          response.concat(line);
+        }
 
         const isCommandSuccessfullyTerminated = expectedResponses.some(
           expectedResponse => line.includes(expectedResponse)
@@ -80,7 +82,7 @@ export class SerialCommander {
           this.serialDataHandler = this.fallbackSerialDataHandler;
           clearInterval(interval);
 
-          resolve(response);
+          resolve(response.join("\n").trim());
         } else {
           if (this.isLogEnabled) this.log(line);
         }

@@ -50,8 +50,8 @@ export class ClientWrapper {
       return false;
     }
     await this.client.start();
-    await this.client.login();
-    const result = await this.client.close();
+    const result = await this.client.login(true);
+    await this.client.close();
     return result;
   }
 
@@ -88,7 +88,7 @@ export interface Client {
   getInfo(): string;
   start(): Promise<void>;
   close(): Promise<void>;
-  login(): Promise<string | void | null>;
+  login(getInfo?: boolean): Promise<string | void | null>;
   execute(command: string): Promise<void>;
   setReceive(receiveText: (text: string) => void): void;
   clearReceive(): void;

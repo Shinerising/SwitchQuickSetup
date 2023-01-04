@@ -18,6 +18,7 @@ const pageRoot: Page = {
   title: "欢迎使用交换机快速配置工具",
   list:
     [
+      { title: "刷新当前页面", command: "back" },
       { title: "修改交换机名称", command: CommandCollection.nameChangeCommand },
       { title: "划分VLAN和网口", list:
           [
@@ -35,8 +36,7 @@ const pageRoot: Page = {
             { title: "返回上一设置界面", command: "back" }
           ]
       },
-      { title: "设置SNMPV2功能", },
-      { title: "设置SNMPV3功能", },
+      { title: "设置SNMP功能", },
       {
         title: "使用网络优化设置功能", list:
           [

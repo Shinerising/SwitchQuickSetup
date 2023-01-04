@@ -36,8 +36,9 @@ export class App {
     }
     clientWrapper.applyConfig(loginConfig);
     const brief = clientWrapper.getBrief();
-    await printPage("正在尝试登录交换机", brief);
+    await printPage("交换机登录信息验证", brief);
     await delay(1000);
+    print("正在尝试登录交换机...");
     const result = await clientWrapper.tryLogin();
     if (!result) {
       print(chalk.red("交换机无法登录，程序即将退出！"));
@@ -101,13 +102,18 @@ export class App {
           const command = commandPage.command;
           if (typeof command === "string") {
             if (command === "back") {
-              this.pageStack.pop();
-              const page = this.pageStack.pop();
-              if (!page) {
-                executeResult = false;
-              } else {
-                this.pageCurrent = page;
+              if (this.pageStack.length === 0) {
+                this.pageCurrent = pageRoot;
                 executeResult = true;
+              } else {
+                this.pageStack.pop();
+                const page = this.pageStack.pop();
+                if (!page) {
+                  executeResult = false;
+                } else {
+                  this.pageCurrent = page;
+                  executeResult = true;
+                }
               }
             } else if (command === "quit") {
               executeResult = false;

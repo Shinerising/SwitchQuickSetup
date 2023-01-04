@@ -1,8 +1,6 @@
 import { Client, ClientConfig } from "./client-manager";
-import { print } from "./util";
 import { BaseClient } from "./client-base";
 import { SerialCommander } from "./serial-commander";
-import { delay } from "./util";
 
 export class SerialClient extends BaseClient implements Client {
 
@@ -23,8 +21,8 @@ export class SerialClient extends BaseClient implements Client {
       readDelimiter: "\n",
       writeDelimiter: "\n",
       disableLog: true,
-      defaultDelay: 1000,
-      log: (text: string | string[]) => {return}
+      defaultDelay: 100,
+      log: () => { return; }
     });
   }
 
@@ -32,45 +30,40 @@ export class SerialClient extends BaseClient implements Client {
     this.serialCommander?.close();
   }
 
-  public async login(): Promise<string | null | void> {
-    if(!this.config || !this.serialCommander){
+  public async login(getInfo = false): Promise<string | null | void> {
+    if (!this.config || !this.serialCommander) {
       return;
     }
-    let command:string;
-    let response:string;
+    let command: string;
+    let response: string;
 
     response = await this.serialCommander.send("");
     command = this.config.user;
     response = await this.serialCommander.send(command);
-    console.log(response);
     command = this.config.password;
     response = await this.serialCommander.send(command);
-    console.log(response);
 
-    if(this.config.password === ClientConfig.defaultPassword){
+    if (this.config.password === ClientConfig.defaultPassword) {
       response = await this.serialCommander.send("Y");
       command = this.config.password;
       response = await this.serialCommander.send(command);
-      console.log(response);
       command = this.config.passwordNew;
       response = await this.serialCommander.send(command);
-      console.log(response);
       command = this.config.passwordNew;
       response = await this.serialCommander.send(command);
-      console.log(response);
     }
-    console.log("DO display version");
-    command = "display version";
-    response = await this.serialCommander.send(command);
-    console.log(response);
-    const a = await this.serialCommander.send("quit");
-    console.log(a);
-    return response;
+
+    if (getInfo) {
+      command = "display version";
+      response = await this.serialCommander.send(command);
+      await this.serialCommander.send("quit");
+      return response;
+    }
   }
 
   public async execute(command: string): Promise<void> {
     const result = await this.serialCommander?.send(command);
-    if(this.receiveText){
+    if (this.receiveText) {
       this.receiveText(result || "");
     }
   }
