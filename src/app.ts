@@ -38,10 +38,14 @@ export class App {
     const brief = clientWrapper.getBrief();
     await printPage("正在尝试登录交换机", brief);
     await delay(1000);
-    const available = await clientWrapper.tryLogin();
-    if (!available) {
+    const result = await clientWrapper.tryLogin();
+    if (!result) {
       print(chalk.red("交换机无法登录，程序即将退出！"));
       return false;
+    } else {
+      print(chalk.gray("交换机成功登录！以下是交换机版本信息："));
+      print(chalk.yellow(result));
+      await delay(3000);
     }
     if (loginConfig.password === ClientConfig.defaultPassword) {
       loginConfig.password = loginConfig.passwordNew;

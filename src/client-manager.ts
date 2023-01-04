@@ -1,3 +1,4 @@
+import { SerialClient } from "./client-serial";
 import { TelnetClient } from "./client-telnet";
 
 export class ClientConfig {
@@ -15,10 +16,18 @@ export class ClientWrapper {
   private client: Client | null;
 
   constructor() {
-    this.client = new TelnetClient("telehack.com");
+    this.client = null;
   }
 
   public applyConfig(config: ClientConfig) {
+    if (config.method === "serial") {
+      this.client = new SerialClient();
+    } else if (config.method === "telnet") {
+      this.client = new TelnetClient();
+    }
+    else {
+      return;
+    }
     this.client?.setConfig(config);
   }
 
@@ -40,10 +49,10 @@ export class ClientWrapper {
     if (!this.client) {
       return false;
     }
-    //await this.client.start();
-    //await this.client.login();
-    //await this.client.close();
-    return true;
+    await this.client.start();
+    await this.client.login();
+    const result = await this.client.close();
+    return result;
   }
 
   public async executeCommandList(commands: string[], sendText: (text: string) => void, receiveText: (text: string) => void) {
@@ -79,7 +88,7 @@ export interface Client {
   getInfo(): string;
   start(): Promise<void>;
   close(): Promise<void>;
-  login(): Promise<void>;
+  login(): Promise<string | void | null>;
   execute(command: string): Promise<void>;
   setReceive(receiveText: (text: string) => void): void;
   clearReceive(): void;

@@ -14,11 +14,6 @@ export class TelnetClient extends BaseClient implements Client {
     execTimeout: 3000
   };
 
-  constructor(host: string) {
-    super();
-    this.params.host = host;
-  }
-
   public async start(): Promise<void> {
     await this.connection.connect(this.params);
   }

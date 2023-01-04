@@ -1,5 +1,5 @@
 import { SerialPort } from "serialport";
-import { ReadlineParser } from "@serialport/parser-readline";
+import { ReadlineParser  } from "@serialport/parser-readline";
 import { print } from "./util";
 
 declare interface SerialCommanderOption {
@@ -20,7 +20,7 @@ export class SerialCommander {
   private fallbackSerialDataHandler: (data: string) => void;
   private serialDataHandler: (data: string) => void;
   private writeDelimiter: string;
-  private parser: ReadlineParser;
+  private parser: ReadlineParser ;
   constructor(option: SerialCommanderOption = {
     port: "/dev/modem",
     baudrate: 115200,
@@ -38,7 +38,7 @@ export class SerialCommander {
     this.writeDelimiter = option.writeDelimiter;
 
     this.port = new SerialPort({ path: option.port, baudRate: option.baudrate });
-    this.parser = new ReadlineParser({ delimiter: option.readDelimiter });
+    this.parser = new ReadlineParser ({ delimiter: ["\n".charCodeAt(0), "\r".charCodeAt(0), ":".charCodeAt(0)] });
     this.port.pipe(this.parser);
     this.parser.on("data", (line: string) => this.serialDataHandler(line));
   }
@@ -47,23 +47,28 @@ export class SerialCommander {
     expectedResponses = ["OK"],
     timeout = 1000,
     delay = this.defaultDelay
-  } = {}) {
+  } = {}): Promise<string> {
     await new Promise(resolve => setTimeout(resolve, delay));
 
-    const startTime = new Date().getTime();
-    let response = "";
-
     return new Promise((resolve, reject) => {
-      const errorTimeout = setTimeout(() => {
+      let response = "";
+      let startTime = Date.now();
+      const interval = setInterval(() => {
+        if (Date.now() - startTime < timeout) {
+          return;
+        }
+        clearInterval(interval);
         this.serialDataHandler = this.fallbackSerialDataHandler;
-        reject(new Error("Request timed out before a satisfactory answer was given"));
-      }, timeout);
+        resolve(response);
+      }, 100);
 
       const escapedCommand = `${command}${this.writeDelimiter}`;
       this.port.write(escapedCommand);
       if (this.isLogEnabled) this.log(`>> ${command}`);
 
       this.serialDataHandler = (line: string | string[]) => {
+        console.log(line);
+        startTime = Date.now();
         response += line;
 
         const isCommandSuccessfullyTerminated = expectedResponses.some(
@@ -73,17 +78,9 @@ export class SerialCommander {
           if (this.isLogEnabled) this.log(`<< ${line}`);
 
           this.serialDataHandler = this.fallbackSerialDataHandler;
-          clearTimeout(errorTimeout);
+          clearInterval(interval);
 
-          const endTime = new Date().getTime();
-
-          resolve({
-            command,
-            startTime,
-            endTime,
-            executionTime: endTime - startTime,
-            response
-          });
+          resolve(response);
         } else {
           if (this.isLogEnabled) this.log(line);
         }

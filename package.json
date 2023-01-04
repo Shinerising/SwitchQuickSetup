@@ -11,7 +11,7 @@
     "clean": "tsc --build --clean",
     "lint": "eslint src/*.ts --fix",
     "start": "ts-node index.ts",
-    "cmd": "ts-node cmd.ts"
+    "cmd": "ts-node src/cmd.ts"
   },
   "keywords": [],
   "author": "",
@@ -57,6 +57,9 @@
     "outputPath": "bin"
   },
   "dependencies": {
+    "@serialport/parser-delimiter": "^10.5.0",
+    "@serialport/parser-inter-byte-timeout": "^10.5.0",
+    "@serialport/parser-ready": "^10.5.0",
     "@types/crypto-js": "^4.1.1",
     "@types/prompts": "^2.4.2",
     "@types/string-format": "^2.0.0",
