@@ -37,7 +37,7 @@ export class App {
     clientWrapper.applyConfig(loginConfig);
     const brief = clientWrapper.getBrief();
     await printPage("交换机登录信息验证", brief);
-    await delay(1000);
+    await delay(200);
     print("正在尝试登录交换机...");
     const result = await clientWrapper.tryLogin();
     if (!result) {
@@ -46,7 +46,13 @@ export class App {
     } else {
       print(chalk.gray("交换机成功登录！以下是交换机版本信息："));
       print(chalk.yellow(result));
-      await delay(3000);
+
+      await printPage(undefined, undefined, {
+        type: "confirm",
+        name: "value",
+        message: "点击任意键进入设置页面",
+        initial: true
+      });
     }
     if (loginConfig.password === ClientConfig.defaultPassword) {
       loginConfig.password = loginConfig.passwordNew;
@@ -102,9 +108,8 @@ export class App {
           const command = commandPage.command;
           if (typeof command === "string") {
             if (command === "back") {
-              if (this.pageStack.length === 0) {
-                this.pageCurrent = pageRoot;
-                executeResult = true;
+              if (this.pageStack.length < 2) {
+                executeResult = false;
               } else {
                 this.pageStack.pop();
                 const page = this.pageStack.pop();
@@ -117,9 +122,29 @@ export class App {
               }
             } else if (command === "quit") {
               executeResult = false;
+            } else if (command === "refresh") {
+              this.pageCurrent = pageRoot;
+              this.pageStack = [];
+              executeResult = true;
             }
           } else {
             executeResult = await executeCommand(command, title, message);
+
+            if (executeResult) {
+              await printPage(undefined, "命令执行完毕！",{
+                type: "confirm",
+                name: "value",
+                message: "点击任意键返回主页面",
+                initial: true
+              });
+            } else {
+              await printPage(undefined, "命令执行失败！",{
+                type: "confirm",
+                name: "value",
+                message: "点击任意键返回主页面",
+                initial: true
+              });
+            }
 
             this.pageCurrent = pageRoot;
             this.pageStack = [];

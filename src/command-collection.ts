@@ -6,10 +6,9 @@ import { __dirname, __isWindows, getInterfaceList } from "./util";
 import { startServer, stopServer, waitForGet, waitForPut } from "./tftp-handler";
 import selectFolder from "win-select-folder";
 
-export type ConsoleCommand = "quit" | "back";
+export type ConsoleCommand = "quit" | "back" | "refresh";
 
 export type CommandSelector = { model: "default" | string, command: string };
-
 export class Command<T extends string> {
   public description: string;
   public questions?: Array<prompts.PromptObject<T>>;
@@ -44,7 +43,9 @@ export class Command<T extends string> {
 }
 
 export const nameChangeCommand = new Command(`
+system-view
 sysname {name}
+quit
 `, "修改设备名称", [{
   type: "text",
   name: "name",
@@ -139,7 +140,40 @@ quit
 }]);
 
 
-export const telnetEnableCommand = new Command(`
+export const portXSetupCommand = new Command(`
+system-view
+port-group {group}
+group-member XGigabitEthernet {start} to XGigabitEthernet {end}
+port link-type access
+port default vlan {vlan}
+quit
+`, "设置网口所属VLAN", [{
+  type: "number",
+  name: "vlan",
+  message: "请输入VLAN号：",
+  initial: "1",
+  validate: value => value < 0 || value > 1000 ? "数值必须在1~1000之间" : true
+}, {
+  type: "number",
+  name: "group",
+  message: "请输入网口组编号：",
+  initial: "1",
+  validate: value => value < 0 || value > 1000 ? "数值必须在1~1000之间" : true
+}, {
+  type: "text",
+  name: "start",
+  message: "请输入起始网口：",
+  initial: "0/0/1",
+  validate: value => !new RegExp(/^((\d{1,2})(\/(?!$)|$)){3}$/).test(value) ? "请输入正确的网口编号" : true
+}, {
+  type: "text",
+  name: "end",
+  message: "请输入终止网口：",
+  initial: "0/0/10",
+  validate: value => !new RegExp(/^((\d{1,2})(\/(?!$)|$)){3}$/).test(value) ? "请输入正确的网口编号" : true
+}]);
+
+export const telnetAdminEnableCommand = new Command(`
 system-view
 telnet server enable
 user-interface vty 0 4
@@ -148,20 +182,55 @@ authentication-mode aaa
 quit
 aaa
 local-user admin service-type telnet terminal
-local-user admin password
 local-user admin privilege level 15
 quit
-`, "");
+quit
+`, "启用Telnet功能");
+
+export const telnetEnableCommand = new Command(`
+system-view
+telnet server enable
+user-interface vty 0 4
+protocol inbound telnet
+authentication-mode aaa
+quit
+aaa
+local-user {user} service-type telnet
+local-user {user} password irreversible-cipher {password}
+{passwordOld}
+local-user {user} privilege level 15
+quit
+quit
+`, "启用Telnet功能（新用户）", [{
+  type: "text",
+  name: "user",
+  message: "请输入用户名：",
+  initial: "admin",
+  validate: value => value.length < 1 || value.length > 16 ? "字符长度必须在1~16之间" : true
+}, {
+  type: "password",
+  name: "password",
+  message: "请输入新的Telnet密码：",
+  validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
+}, {
+  type: "password",
+  name: "passwordOld",
+  message: "请输入旧的Telnet密码：",
+  validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
+}]);
 
 export const telnetDisableCommand = new Command(`
 system-view
 telnet server disable
-`, "");
+Y
+quit
+`, "禁用Telnet功能");
 
 export const arpConfigCommand = new Command(`
 system-view
 arp expire-time {expireTime}
 arp detect-times {detectTimes}
+quit
 `, "修改ARP表老化时间", [{
   type: "number",
   name: "expireTime",
@@ -184,11 +253,13 @@ arp detect-times {detectTimes}
 export const arpStrictLearningEnableCommand = new Command(`
 system-view
 arp learning strict
+quit
 `, "");
 
 export const arpStrictLearningDisableCommand = new Command(`
 system-view
 undo arp learning strict
+quit
 `, "");
 
 export const configPreviewCommand = new Command(`
@@ -211,7 +282,10 @@ tftp {ip} put vrpcfg.zip
   initial: () => __dirname,
   choices: () => __isWindows ? [{ title: __dirname }, { title: "使用文件对话框选择", value: "0" }] : [{ title: __dirname }],
   validate: value => value !== "0" && !fs.existsSync(value) ? "请输入合法的文件保存位置" : true
-}], async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+}], async (result: prompts.Answers<"ip" | "folder"> | null, state?: unknown[]) => {
+  if (!result) {
+    return;
+  }
   if (__isWindows && result.folder === "0") {
     const root = "myComputer";
     const description = "请选择文件保存位置";
@@ -230,7 +304,11 @@ tftp {ip} put vrpcfg.zip
   })();
 
   return "目标文件夹存在：" + result.folder;
-}, async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+}, async (result: prompts.Answers<"ip" | "folder"> | null, state?: unknown[]) => {
+  if (!result) {
+    return;
+  }
+
   stopServer();
 
   const file = state?.pop();
@@ -257,7 +335,11 @@ tftp {ip} get vrpcfg.zip
   initial: () => __dirname,
   choices: () => __isWindows ? [{ title: __dirname }, { title: "使用文件对话框选择", value: "0" }] : [{ title: __dirname }],
   validate: value => value !== "0" && !fs.existsSync(value) ? "请输入合法的文件保存位置" : true
-}], async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+}], async (result: prompts.Answers<"ip" | "folder"> | null, state?: unknown[]) => {
+  if (!result) {
+    return;
+  }
+
   if (__isWindows && result.folder === "0") {
     const root = "myComputer";
     const description = "请选择文件保存位置";
@@ -277,7 +359,11 @@ tftp {ip} get vrpcfg.zip
   })();
 
   return "目标文件夹存在：" + result.folder;
-}, async (result: prompts.Answers<"ip" | "folder">, state?: unknown[]) => {
+}, async (result: prompts.Answers<"ip" | "folder"> | null, state?: unknown[]) => {
+  if (!result) {
+    return;
+  }
+
   stopServer();
 
   const file = state?.pop();
@@ -299,3 +385,11 @@ display interface brief
 export const previewDeviceCommand = new Command(`
 display device
 `, "查看已连接的交换机设备");
+
+export const previewTelnetCommand = new Command(`
+display telnet server status
+`, "查看Telnet通信状态");
+
+export const previewUsersCommand = new Command(`
+display users all
+`, "查看所有用户登录状态");

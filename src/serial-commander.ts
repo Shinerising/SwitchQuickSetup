@@ -9,6 +9,7 @@ declare interface SerialCommanderOption {
   writeDelimiter: string;
   disableLog: boolean;
   defaultDelay: number;
+  defaultTimeout: number;
   log: (text: string | string[]) => void;
 }
 
@@ -17,6 +18,7 @@ export class SerialCommander {
   private log: (text: string | string[]) => void;
   private isLogEnabled: boolean;
   private defaultDelay: number;
+  private defaultTimeout: number;
   private fallbackSerialDataHandler: (data: string) => void;
   private serialDataHandler: (data: string) => void;
   private writeDelimiter: string;
@@ -28,11 +30,13 @@ export class SerialCommander {
     writeDelimiter: "\r\n",
     disableLog: false,
     defaultDelay: 100,
+    defaultTimeout: 200,
     log: string => print(`[${new Date().toISOString()}] ${string}`)
   }) {
     this.log = option.log;
     this.isLogEnabled = !option.disableLog;
     this.defaultDelay = option.defaultDelay;
+    this.defaultTimeout = option.defaultTimeout;
     this.fallbackSerialDataHandler = (line: string) => this.log(`{answer given outside command scope} ${line}`);
     this.serialDataHandler = this.fallbackSerialDataHandler;
     this.writeDelimiter = option.writeDelimiter;
@@ -45,9 +49,10 @@ export class SerialCommander {
 
   async send(command: string, {
     expectedResponses = ["OK"],
-    timeout = 1000,
+    timeout = this.defaultTimeout,
     delay = this.defaultDelay
   } = {}): Promise<string> {
+    await new Promise(resolve => setTimeout(resolve, delay));
 
     return new Promise((resolve) => {
       const response: string[] = [];

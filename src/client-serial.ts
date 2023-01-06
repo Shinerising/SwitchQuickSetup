@@ -22,11 +22,16 @@ export class SerialClient extends BaseClient implements Client {
       writeDelimiter: "\n",
       disableLog: true,
       defaultDelay: 100,
+      defaultTimeout: 200,
       log: () => { return; }
     });
   }
 
   public async close(): Promise<void> {
+    if (!this.config || !this.serialCommander) {
+      return;
+    }
+    await this.serialCommander.send("quit");
     this.serialCommander?.close();
   }
 
