@@ -49,11 +49,13 @@ const pageRoot: Page = {
           ]
       },
       {
-        title: "查看、备份或恢复交换机配置", list:
+        title: "查看、备份或恢复交换机配置", alert: "备份交换机配置文件前请先执行保存指令！", list:
           [
             { title: "查看当前交换机配置", command: CommandCollection.configPreviewCommand },
+            { title: "保存当前交换机配置", command: CommandCollection.configSaveCommand },
             { title: "备份当前交换机配置", command: CommandCollection.configBackupCommand },
             { title: "还原当前交换机配置", command: CommandCollection.configRestoreCommand },
+            { title: "应用当前交换机配置", command: CommandCollection.configStartupCommand },
             { title: "返回上一设置界面", command: "back" }
           ]
       },
@@ -75,6 +77,7 @@ const pageRoot: Page = {
             { title: "查看已连接的交换机设备", command: CommandCollection.previewDeviceCommand },
             { title: "查看Telnet通信状态", command: CommandCollection.previewTelnetCommand },
             { title: "查看所有用户登录状态", command: CommandCollection.previewUsersCommand },
+            { title: "查看系统启动参数", command: CommandCollection.previewStartupCommand },
             { title: "返回上一设置界面", command: "back" }
           ]
       },

@@ -266,6 +266,11 @@ export const configPreviewCommand = new Command(`
 display current-configuration
 `, "查看交换机当前配置文件");
 
+export const configSaveCommand = new Command(`
+save vrpcfg.zip
+Y
+`, "保存交换机当前配置文件");
+
 export const configBackupCommand = new Command(`
 tftp {ip} put vrpcfg.zip
 `, "备份交换机配置文件", [{
@@ -374,6 +379,10 @@ tftp {ip} get vrpcfg.zip
   }
 });
 
+export const configStartupCommand = new Command(`
+startup saved-configuration vrpcfg.zip
+`, "应用交换机当前配置文件");
+
 export const previewVlanCommand = new Command(`
 display vlan
 `, "查看VLAN配置状态");
@@ -393,3 +402,7 @@ display telnet server status
 export const previewUsersCommand = new Command(`
 display users all
 `, "查看所有用户登录状态");
+
+export const previewStartupCommand = new Command(`
+display startup
+`, "查看系统启动参数");

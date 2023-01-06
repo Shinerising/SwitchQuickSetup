@@ -19,7 +19,6 @@ await clientWrapper.executeCommandList(commands.split("\n"), (text: string) => {
 }, (text: string) => {
   print(chalk.yellow(text));
 });
-*/
 
 const secret = "MIICXQIBAAKBgQDC";
 const configFile = "switch.conf";
@@ -49,10 +48,11 @@ const loadConfigFile = () => {
 
 console.log(loadConfigFile());
 
-/*
+*/
+
 startServer(__dirname);
 
-const file = await waitForGet(20000);
+const file = await waitForPut(20000);
 console.log(file);
 stopServer();
-*/
+

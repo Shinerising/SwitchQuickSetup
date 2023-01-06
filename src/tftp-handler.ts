@@ -6,7 +6,7 @@ const startServer = async (location: string) => {
   const path = location;
   server = createServer({
     host: "0.0.0.0",
-    port: 8069,
+    port: 69,
     root: path,
     denyPUT: false
   });
