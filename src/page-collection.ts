@@ -45,6 +45,7 @@ const pageRoot: Page = {
             { title: "修改ARP表老化时间", command: CommandCollection.arpConfigCommand },
             { title: "关闭ARP严格学习功能", command: CommandCollection.arpStrictLearningDisableCommand },
             { title: "打开ARP严格学习功能", command: CommandCollection.arpStrictLearningEnableCommand },
+            { title: "设置终端命令输出最大行数", command: CommandCollection.screenLengthSetCommand },
             { title: "返回上一设置界面", command: "back" }
           ]
       },
@@ -52,10 +53,10 @@ const pageRoot: Page = {
         title: "查看、备份或恢复交换机配置", alert: "备份交换机配置文件前请先执行保存指令！", list:
           [
             { title: "查看当前交换机配置", command: CommandCollection.configPreviewCommand },
-            { title: "保存当前交换机配置", command: CommandCollection.configSaveCommand },
-            { title: "备份当前交换机配置", command: CommandCollection.configBackupCommand },
-            { title: "还原当前交换机配置", command: CommandCollection.configRestoreCommand },
-            { title: "应用当前交换机配置", command: CommandCollection.configStartupCommand },
+            { title: "保存交换机配置", command: CommandCollection.configSaveCommand },
+            { title: "备份交换机配置", command: CommandCollection.configBackupCommand },
+            { title: "还原交换机配置", command: CommandCollection.configRestoreCommand },
+            { title: "将交换机配置应用至启动", command: CommandCollection.configStartupCommand },
             { title: "返回上一设置界面", command: "back" }
           ]
       },
@@ -81,7 +82,7 @@ const pageRoot: Page = {
             { title: "返回上一设置界面", command: "back" }
           ]
       },
-      { title: "退出设置", alert: "您即将退出本程序！", command: "quit" }
+      { title: "退出设置", alert: "您即将退出本程序，请确认交换机设置是否已保存或备份！", command: "quit" }
     ]
 };
 

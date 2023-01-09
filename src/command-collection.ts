@@ -254,26 +254,54 @@ export const arpStrictLearningEnableCommand = new Command(`
 system-view
 arp learning strict
 quit
-`, "");
+`, "启用ARP表严格学习功能");
 
 export const arpStrictLearningDisableCommand = new Command(`
 system-view
 undo arp learning strict
 quit
-`, "");
+`, "禁用ARP表严格学习功能");
+
+export const screenLengthSetCommand = new Command(`
+system-view
+user-interface console 0
+screen-length {count}
+quit
+quit
+`, "设置终端命令输出行数", [{
+  type: "number",
+  name: "count",
+  message: "请输入输出行数(0为全部显示)：",
+  initial: 0,
+  max: 1024,
+  min: 0,
+  validate: value => value < 0 || value > 1024 ? "数值必须在0~1024之间" : true
+}]);
 
 export const configPreviewCommand = new Command(`
 display current-configuration
 `, "查看交换机当前配置文件");
 
 export const configSaveCommand = new Command(`
-save vrpcfg.zip
+save all {file}
 Y
-`, "保存交换机当前配置文件");
+`, "保存交换机当前配置文件", [{
+  type: "text",
+  name: "file",
+  message: "请输入配置文件名：",
+  initial: "vrpcfg.zip",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}]);
 
 export const configBackupCommand = new Command(`
-tftp {ip} put vrpcfg.zip
+tftp {ip} put {file}
 `, "备份交换机配置文件", [{
+  type: "text",
+  name: "file",
+  message: "请输入配置文件名：",
+  initial: "vrpcfg.zip",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}, {
   type: "autocomplete",
   name: "ip",
   message: "请输入本机IP地址",
@@ -325,8 +353,14 @@ tftp {ip} put vrpcfg.zip
 });
 
 export const configRestoreCommand = new Command(`
-tftp {ip} get vrpcfg.zip
+tftp {ip} get {file}
 `, "还原交换机配置文件", [{
+  type: "text",
+  name: "file",
+  message: "请输入配置文件名：",
+  initial: "vrpcfg.zip",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}, {
   type: "autocomplete",
   name: "ip",
   message: "请输入本机IP地址",
@@ -380,8 +414,14 @@ tftp {ip} get vrpcfg.zip
 });
 
 export const configStartupCommand = new Command(`
-startup saved-configuration vrpcfg.zip
-`, "应用交换机当前配置文件");
+startup saved-configuration {file}
+`, "应用交换机当前配置文件", [{
+  type: "text",
+  name: "file",
+  message: "请输入配置文件名：",
+  initial: "vrpcfg.zip",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}]);
 
 export const previewVlanCommand = new Command(`
 display vlan

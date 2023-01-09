@@ -57,17 +57,42 @@ const file = await waitForPut(20000);
 console.log(file);
 stopServer();
 */
-const telnetCommander = new TelnetCommander({
+const connection = new Telnet()
+
+// these parameters are just examples and most probably won't work for your use-case.
+const params = {
+  host: '172.16.34.1',
   port: 23,
-  host: "172.16.34.1",
-  shellPrompt: null,
-  negotiationMandatory: false,
   irs: "\n",
   ors: "\n",
-  timeout: 1000,
-  sendTimeout: 200,
+  shellPrompt: /\<.*\>|:/gi, // or negotiationMandatory: false
+  loginPrompt: /Username:/i,
+  passwordPrompt: /Password:/i,
+  username: "admin",
+  password: "admin@huawei",
+  timeout: 1500,
+  echoLines: 0,
+  stripShellPrompt: false
+}
+
+try {
+  await connection.connect(params)
+} catch (error) {
+  console.error(error);
+}
+
+connection.on("data", (data) => {
+  //console.log(data.toString());
 });
 
-//await connection.end();
-
-
+let res : string;
+res = await connection.exec('')
+console.log('async result:', res)
+res = await connection.exec('admin')
+console.log('async result:', res)
+res = await connection.exec('admin@huawei')
+console.log('async result:', res)
+res = await connection.exec('display version')
+console.log('async result:', res)
+await delay(3000);
+connection.end();
