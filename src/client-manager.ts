@@ -68,7 +68,7 @@ export class ClientWrapper {
       sendText(command);
       let result = await this.executeCommand(command);
       while (result?.includes("---- More ----")) {
-        result = await this.executeCommand(" ");
+        result = await this.executeCommand(" ", 1000);
       }
     }
 
@@ -77,11 +77,11 @@ export class ClientWrapper {
     this.client.clearReceive();
   }
 
-  private async executeCommand(command: string) {
+  private async executeCommand(command: string, timeout?: number) {
     if (!this.client) {
       return;
     }
-    return await this.client.execute(command);
+    return await this.client.execute(command, timeout);
   }
 }
 
@@ -92,7 +92,7 @@ export interface Client {
   start(): Promise<void>;
   close(): Promise<void>;
   login(getInfo?: boolean): Promise<string | void | null>;
-  execute(command: string): Promise<string | undefined>;
+  execute(command: string, timeout?: number): Promise<string | undefined>;
   setReceive(receiveText: (text: string) => void): void;
   clearReceive(): void;
 }

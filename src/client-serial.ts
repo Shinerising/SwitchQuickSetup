@@ -66,8 +66,8 @@ export class SerialClient extends BaseClient implements Client {
     }
   }
 
-  public async execute(command: string): Promise<string | undefined> {
-    const result = await this.serialCommander?.send(command);
+  public async execute(command: string, timeout?: number): Promise<string | undefined> {
+    const result = timeout ? await this.serialCommander?.send(command, { timeout }) : await this.serialCommander?.send(command);
     if (this.receiveText) {
       this.receiveText(result || "");
     }

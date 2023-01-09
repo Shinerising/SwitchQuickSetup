@@ -64,8 +64,8 @@ export class TelnetClient extends BaseClient implements Client {
     }
   }
 
-  public async execute(command: string): Promise<string | undefined> {
-    const result = await this.telnetCommander?.send(command);
+  public async execute(command: string, timeout?: number): Promise<string | undefined> {
+    const result = timeout ? await this.telnetCommander?.send(command, { timeout }) : await this.telnetCommander?.send(command);
     if (this.receiveText) {
       this.receiveText(result || "");
     }
