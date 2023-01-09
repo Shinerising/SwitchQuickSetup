@@ -10,6 +10,8 @@ import { ClientConfig, clientWrapper } from "./client-manager";
 import chalk from "chalk";
 import { print, __dirname, delay } from "./util";
 import { startServer, stopServer, waitForPut, waitForGet } from "./tftp-handler";
+import { Telnet } from "telnet-client";
+import { TelnetCommander } from "./telnet-commander";
 
 //await executeCommand(configBackupCommand);
 /*
@@ -48,11 +50,24 @@ const loadConfigFile = () => {
 
 console.log(loadConfigFile());
 
-*/
 
 startServer(__dirname);
 
 const file = await waitForPut(20000);
 console.log(file);
 stopServer();
+*/
+const telnetCommander = new TelnetCommander({
+  port: 23,
+  host: "172.16.34.1",
+  shellPrompt: null,
+  negotiationMandatory: false,
+  irs: "\n",
+  ors: "\n",
+  timeout: 1000,
+  sendTimeout: 200,
+});
+
+//await connection.end();
+
 

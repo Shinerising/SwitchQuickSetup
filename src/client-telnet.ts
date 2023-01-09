@@ -1,50 +1,74 @@
-import { Telnet } from "telnet-client";
-import { Client } from "./client-manager";
-import { delay } from "./util";
+import { Client, ClientConfig } from "./client-manager";
 import { BaseClient } from "./client-base";
+import { TelnetCommander } from "./telnet-commander";
 
 export class TelnetClient extends BaseClient implements Client {
-  private connection = new Telnet();
-  private params = {
-    port: 23,
-    host: "",
-    shellPrompt: "\\.",
-    ors: "\r\n",
-    timeout: 3000,
-    execTimeout: 3000
-  };
+  private telnetCommander: TelnetCommander | null;
+
+  constructor() {
+    super();
+    this.telnetCommander = null;
+  }
 
   public async start(): Promise<void> {
-    await this.connection.connect(this.params);
+    if (!this.config) {
+      return;
+    }
+    this.telnetCommander = new TelnetCommander({
+      port: 23,
+      host: this.config.target,
+      shellPrompt: null,
+      negotiationMandatory: false,
+      irs: "\n",
+      ors: "\n",
+      timeout: 1000,
+      sendTimeout: 200,
+    });
+    await this.telnetCommander.open();
   }
 
   public async close(): Promise<void> {
-    await this.connection.end();
-  }
-
-  public async login(): Promise<void> {
-    if(!this.config){
+    if (!this.config || !this.telnetCommander) {
       return;
     }
-    let command:string;
-    let response:string;
+    this.telnetCommander?.close();
+  }
 
+  public async login(getInfo = false): Promise<string | null | void> {
+    if (!this.config || !this.telnetCommander) {
+      return;
+    }
+    let command: string;
+    let response: string;
+
+    response = await this.telnetCommander.send("");
     command = this.config.user;
-    response = await this.connection.exec(command);
-    await delay(200);
+    response = await this.telnetCommander.send(command);
     command = this.config.password;
-    response = await this.connection.exec(command);
+    response = await this.telnetCommander.send(command);
 
-    if(response === "123"){
+    if (this.config.password === ClientConfig.defaultPassword) {
+      response = await this.telnetCommander.send("Y");
+      command = this.config.password;
+      response = await this.telnetCommander.send(command);
       command = this.config.passwordNew;
-      response = await this.connection.exec(command);
+      response = await this.telnetCommander.send(command);
+      command = this.config.passwordNew;
+      response = await this.telnetCommander.send(command);
+    }
+
+    if (getInfo) {
+      command = "display version";
+      response = await this.telnetCommander.send(command);
+      return response;
     }
   }
 
-  public async execute(command: string): Promise<void> {
-    const result = await this.connection.exec(command);
-    if(this.receiveText){
-      this.receiveText(result);
+  public async execute(command: string): Promise<string | undefined> {
+    const result = await this.telnetCommander?.send(command);
+    if (this.receiveText) {
+      this.receiveText(result || "");
     }
+    return result;
   }
 }

@@ -66,7 +66,10 @@ export class ClientWrapper {
 
     for (const command of commands) {
       sendText(command);
-      await this.executeCommand(command);
+      let result = await this.executeCommand(command);
+      while (result?.includes("---- More ----")) {
+        result = await this.executeCommand(" ");
+      }
     }
 
     await this.client.close();
@@ -78,7 +81,7 @@ export class ClientWrapper {
     if (!this.client) {
       return;
     }
-    await this.client.execute(command);
+    return await this.client.execute(command);
   }
 }
 
@@ -89,7 +92,7 @@ export interface Client {
   start(): Promise<void>;
   close(): Promise<void>;
   login(getInfo?: boolean): Promise<string | void | null>;
-  execute(command: string): Promise<void>;
+  execute(command: string): Promise<string | undefined>;
   setReceive(receiveText: (text: string) => void): void;
   clearReceive(): void;
 }

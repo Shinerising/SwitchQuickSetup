@@ -66,10 +66,11 @@ export class SerialClient extends BaseClient implements Client {
     }
   }
 
-  public async execute(command: string): Promise<void> {
+  public async execute(command: string): Promise<string | undefined> {
     const result = await this.serialCommander?.send(command);
     if (this.receiveText) {
       this.receiveText(result || "");
     }
+    return result;
   }
 }
