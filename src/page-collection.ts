@@ -44,6 +44,7 @@ const pageRoot: Page = {
         [
           { title: "启用SNMPv2c功能", command: CommandCollection.snmpEnableV2Command },
           { title: "禁用SNMPv2c功能", command: CommandCollection.snmpDisableV2Command },
+          { title: "返回上一设置界面", command: "back" }
         ]
       },
       {
