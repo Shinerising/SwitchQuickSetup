@@ -423,6 +423,104 @@ startup saved-configuration {file}
   validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
 }]);
 
+export const snmpEnableV2Command = new Command(`
+system-view
+snmp-agent
+snmp-agent sys-info version v2c
+snmp-agent protocol source-interface Vlanif {vlan}
+snmp-agent community complexity-check disable
+snmp-agent community read {name}
+snmp-agent community write {name}
+quit
+`, "启用SNMPv2c功能", [{
+  type: "text",
+  name: "vlan",
+  message: "请输入允许接入的VLAN编号：",
+  initial: "1",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+},{
+  type: "text",
+  name: "name",
+  message: "请输入Community名称",
+  initial: "SNMP_1989",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}]);
+
+export const snmpDisableV2Command = new Command(`
+system-view
+undo snmp-agent
+undo snmp-agent protocol source-interface Vlanif {vlan}
+undo snmp-agent community read {name}
+undo snmp-agent community write {name}
+quit
+`, "禁用SNMPv2c功能", [{
+  type: "text",
+  name: "vlan",
+  message: "请输入允许接入的VLAN编号：",
+  initial: "1",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+},{
+  type: "text",
+  name: "name",
+  message: "请输入Community名称",
+  initial: "SNMP_1989",
+  validate: value => value.length < 1 || value.length > 32 ? "字符长度必须在1~32之间" : true
+}]);
+
+export const systemRebootCommand = new Command(`
+reboot fast
+Y
+`, "重启交换机", [{
+  type: "confirm",
+  name: "value",
+  message: "是否确定重启交换机？",
+  initial: true
+}]);
+
+export const systemPasswordCommand = new Command(`
+system-view
+aaa
+local-user admin password irreversible-cipher {newPassword}
+{oldPassword}
+`, "修改管理员密码", [{
+  type: "password",
+  name: "oldPassword",
+  message: "请输入旧登录密码：",
+  validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
+},{
+  type: "password",
+  name: "newPassword",
+  message: "请输入新登录密码：",
+  validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
+}, {
+  type: "password",
+  name: "newPasswordRepeat",
+  message: "请再次输入登录密码：",
+  validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true
+}]);
+
+export const systemResetCommand = new Command(`
+reset saved-configuration
+Y
+reboot fast
+N
+Y
+`, "清空交换机配置", [{
+  type: "confirm",
+  name: "value",
+  message: "是否确定清空交换机配置？",
+  initial: true
+}]);
+
+export const systemFactoryCommand = new Command(`
+reset factory-configuration
+`, "恢复出厂配置", [{
+  type: "confirm",
+  name: "value",
+  message: "是否确定恢复出厂配置？",
+  initial: true
+}]);
+
 export const previewVlanCommand = new Command(`
 display vlan
 `, "查看VLAN配置状态");

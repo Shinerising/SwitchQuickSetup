@@ -10,7 +10,7 @@ declare type ListPage = BasicPage & {
   list: Page[],
 }
 declare type CommandPage = BasicPage & {
-  command?: ConsoleCommand | Command<string>,
+  command: ConsoleCommand | Command<string>,
 }
 declare type Page = ListPage | CommandPage;
 
@@ -20,7 +20,8 @@ const pageRoot: Page = {
     [
       { title: "刷新当前页面", command: "refresh" },
       { title: "修改交换机名称", command: CommandCollection.nameChangeCommand },
-      { title: "划分VLAN和网口", list:
+      {
+        title: "划分VLAN和网口", list:
           [
             { title: "设置VLAN", command: CommandCollection.vlanEnableCommand },
             { title: "取消设置VLAN", command: CommandCollection.vlanDisableCommand },
@@ -38,7 +39,13 @@ const pageRoot: Page = {
             { title: "返回上一设置界面", command: "back" }
           ]
       },
-      { title: "设置SNMP功能", },
+      {
+        title: "设置SNMP功能", list:
+        [
+          { title: "启用SNMPv2c功能", command: CommandCollection.snmpEnableV2Command },
+          { title: "禁用SNMPv2c功能", command: CommandCollection.snmpDisableV2Command },
+        ]
+      },
       {
         title: "使用网络优化设置功能", list:
           [
@@ -63,10 +70,10 @@ const pageRoot: Page = {
       {
         title: "使用关键性设置功能", alert: "注意！以下操作可能对交换机工作产生严重影响，请谨慎操作！", list:
           [
-            { title: "重启交换机", },
-            { title: "修改用户登录密码", },
-            { title: "重置所有用户自定义设置", },
-            { title: "恢复到出厂设置", },
+            { title: "重启交换机", alert: "重启交换机会导致当前业务中断，重启时长可能长达5分钟以上，请确保不会对其他工作产生影响同时已保存所有配置文件！", command: CommandCollection.systemRebootCommand },
+            { title: "修改管理员登录密码", alert: "修改交换机管理员密码可能会导致其他人员无法管理交换机，请牢记并妥善保管新设立的密码内容！", command: CommandCollection.systemPasswordCommand },
+            { title: "重置所有用户自定义设置", alert: "重置自定义设置会删除所有用户配置项目并恢复到出厂默认值，请确定是否采取此操作！", command: CommandCollection.systemResetCommand },
+            { title: "恢复到出厂模式", alert: "将交换机恢复至出厂模式将完全抹除交换机中所有文件和设置，请确定是否采取此操作！", command: CommandCollection.systemFactoryCommand },
             { title: "返回上一设置界面", command: "back" }
           ]
       },
