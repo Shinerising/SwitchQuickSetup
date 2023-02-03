@@ -474,7 +474,7 @@ Y
   type: "confirm",
   name: "value",
   message: "是否确定重启交换机？",
-  initial: true
+  initial: false
 }]);
 
 export const systemPasswordCommand = new Command(`
@@ -509,7 +509,7 @@ Y
   type: "confirm",
   name: "value",
   message: "是否确定清空交换机配置？",
-  initial: true
+  initial: false
 }]);
 
 export const systemFactoryCommand = new Command(`
@@ -518,7 +518,7 @@ reset factory-configuration
   type: "confirm",
   name: "value",
   message: "是否确定恢复出厂配置？",
-  initial: true
+  initial: false
 }]);
 
 export const previewVlanCommand = new Command(`
