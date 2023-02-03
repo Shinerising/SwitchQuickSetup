@@ -105,7 +105,7 @@ export const getLoginConfig = async (serialList: string[]): Promise<ClientConfig
     message: "请选择连接方式：",
     choices: [
       { title: "串口Command", value: "serial" },
-      { title: "以太网口Command", value: "ethernet" },
+      { title: "以太网口Command", value: "ethernet", disabled: true },
       { title: "Telnet", value: "telnet" },
       { title: "其他方式", value: "other" }
     ],
