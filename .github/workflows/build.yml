@@ -32,9 +32,6 @@ jobs:
     - name: Build
       run: npm run build-win
 
-    - name: Add manifest
-      run: node manifest.js
-
     - name: Archive Release
       uses: thedoctor0/zip-release@main
       with:
