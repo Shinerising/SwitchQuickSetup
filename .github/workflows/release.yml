@@ -30,9 +30,6 @@ jobs:
 
     - name: Build
       run: npm run build-win
-
-    - name: Add manifest
-      run: node manifest.js
       
     - name: Sign Binaries
       uses: GabrielAcostaEngler/signtool-code-sign@main
