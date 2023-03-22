@@ -43,19 +43,22 @@ export class SerialClient extends BaseClient implements Client {
     let response: string;
 
     response = await this.serialCommander.send("");
-    command = this.config.user;
-    response = await this.serialCommander.send(command);
-    command = this.config.password;
-    response = await this.serialCommander.send(command);
 
-    if (this.config.password === ClientConfig.defaultPassword) {
-      response = await this.serialCommander.send("Y");
+    if(this.config.login) {
+      command = this.config.user;
+      response = await this.serialCommander.send(command);
       command = this.config.password;
       response = await this.serialCommander.send(command);
-      command = this.config.passwordNew;
-      response = await this.serialCommander.send(command);
-      command = this.config.passwordNew;
-      response = await this.serialCommander.send(command);
+  
+      if (this.config.password === ClientConfig.defaultPassword) {
+        response = await this.serialCommander.send("Y");
+        command = this.config.password;
+        response = await this.serialCommander.send(command);
+        command = this.config.passwordNew;
+        response = await this.serialCommander.send(command);
+        command = this.config.passwordNew;
+        response = await this.serialCommander.send(command);
+      }
     }
 
     if (getInfo) {

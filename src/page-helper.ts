@@ -118,13 +118,18 @@ export const getLoginConfig = async (serialList: string[]): Promise<ClientConfig
     choices: () => serialList.map(item => ({ title: item, value: item })),
     validate: value => value.length === 0 ? "必须输入通信地址" : true
   }, {
-    type: "text",
+    type: "confirm",
+    name: "login",
+    message: "是否需要密码登录？",
+    initial: true
+  }, {
+    type: (_prev, result) => result.login ? "text" : null,
     name: "user",
     message: "请输入用户名：",
     initial: "admin",
     validate: value => value.length < 1 || value.length > 16 ? "字符长度必须在1~16之间" : true
   }, {
-    type: "password",
+    type: (_prev, result) => result.login ? "password" : null,
     name: "password",
     message: "请输入登录密码：",
     validate: value => value.length < 1 || value.length > 16 ? "密码长度必须在1~16之间" : true

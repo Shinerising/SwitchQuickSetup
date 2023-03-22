@@ -7,6 +7,7 @@ export class ClientConfig {
   public model = "other";
   public method: "serial" | "telnet" | "ethernet" | "other" = "other";
   public target = "";
+  public login = true;
   public user = "admin";
   public password = "password";
   public passwordNew = "passwordNew";

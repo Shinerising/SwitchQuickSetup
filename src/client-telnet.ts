@@ -14,9 +14,10 @@ export class TelnetClient extends BaseClient implements Client {
     if (!this.config) {
       return;
     }
+    const [ host, port ] = this.config.target.split(":");
     this.telnetCommander = new TelnetCommander({
-      port: 23,
-      host: this.config.target,
+      port: port ? parseInt(port) : 23,
+      host: host,
       shellPrompt: null,
       negotiationMandatory: false,
       irs: "\n",
@@ -42,19 +43,22 @@ export class TelnetClient extends BaseClient implements Client {
     let response: string;
 
     response = await this.telnetCommander.send("");
-    command = this.config.user;
-    response = await this.telnetCommander.send(command);
-    command = this.config.password;
-    response = await this.telnetCommander.send(command);
 
-    if (this.config.password === ClientConfig.defaultPassword) {
-      response = await this.telnetCommander.send("Y");
+    if(this.config.login) {
+      command = this.config.user;
+      response = await this.telnetCommander.send(command);
       command = this.config.password;
       response = await this.telnetCommander.send(command);
-      command = this.config.passwordNew;
-      response = await this.telnetCommander.send(command);
-      command = this.config.passwordNew;
-      response = await this.telnetCommander.send(command);
+  
+      if (this.config.password === ClientConfig.defaultPassword) {
+        response = await this.telnetCommander.send("Y");
+        command = this.config.password;
+        response = await this.telnetCommander.send(command);
+        command = this.config.passwordNew;
+        response = await this.telnetCommander.send(command);
+        command = this.config.passwordNew;
+        response = await this.telnetCommander.send(command);
+      }
     }
 
     if (getInfo) {
